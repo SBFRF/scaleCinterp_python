@@ -5,7 +5,6 @@ Created on Thu Oct 16 09:33:00 2014
 @author: jwlong
 """
 
-import arcpy
 import numpy as np
 import os, time
 from scipy.io import netcdf
@@ -35,6 +34,7 @@ toolkitpath = 'D:\\CDI_DEM\\geoprocessing'            # Path to the interpolatio
 savepath = 'D:\\CDI_DEM\\geoprocessing'               # Path to the final output directory for saving the DEM
 datapath = 'D:\\CDI_DEM\\2010_dauphin_lidar_test'     # Path to the raw data files
 datatype = 'las'                                      # Type of data to be analyzed (file extension; e.g. 'las' for lidar tile files)
+                                                      #     ['las', 'laz', 'nc', 'txt', 'mat']
 x0 = -88.36                                           # Minimum x-value of the grid
 x1 = -88                                              # Maximum x-value of the grid
 y0 = 30.19                                            # Minimum y-value of the grid
@@ -45,6 +45,7 @@ msmoothx = 100                                        # Smoothing length scale i
 msmoothy = 200                                        # Smoothing length scale in the y-direction
 msmootht = 1                                          # Smoothing length scale in time
 filtername = 'hanning'                                # Name of the filter type to smooth the data
+                                                      #      ['hanning', 'linloess', 'quadloess', 'boxcar', si']
 nmseitol = 0.75                                       # Normalized error tolerance the user will tolerate in the final grid
                                                       #      (0 - (no error) to 1 (no removal of bad points))
 grid_coord_check = 'LL'                               # ['LL' or 'UTM'] - Designates if the grid supplied by the user (if one exists)
@@ -75,9 +76,7 @@ N, M = np.shape(x_grid)
 x_out = x_grid[1,:].copy()
 y_out = y_grid[:,1].copy()
 
-del x_grid
-del y_grid
-del t_grid
+del x_grid, y_grid, t_grid
 
 # subsample the data
 DXsmooth = np.array([msmoothx,msmoothy,msmootht])/4
@@ -87,7 +86,7 @@ Xi, zprime, si = subsampleData(x,z,s,DXsmooth)
 elapsed = time.time() - t
 print 'subsampling time is %d seconds' % elapsed
 
-# Send it all into scalecinterpolation
+# Send it all into scalecinterpolation  -  Here is where the interpolation takes place
 t = time.time()
 print 'Interpolating'
 zi, msei, nmsei, msri = scalecInterpTilePerturbations(Xi, zprime, si, xi, lx, filtername, nmseitol)
