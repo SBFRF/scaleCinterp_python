@@ -5,7 +5,7 @@ os	(usually comes installed with python)
 scipy  	(usually comes installed with python)
 numpy  	(usually comes installed with python)
 pyproj 	(obtained precompiled binary from http://www.lfd.uci.edu/~gohlke/pythonlibs/pyproj-1.9.4dev.win-amd64-py2.7.exe)
-	Also available via pip install (eg. pip install 
+	Also available via pip install (eg. pip install pyproj)
 liblas 	(obtained precompiled binary from http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy libLAS-1.7.0.win-amd64-py2.7.exe)
 	Also available via pip install (eg. pip install liblas)
 
@@ -19,12 +19,12 @@ Curerently the code package includes:
 
 run_DEM_generator.py:	Wrapper routine to implement construction of a DEM (Digital Elevation Model).
 	Reguires user inputs including:
-		toolkitpath:	Path to the interpolation toolkit codes
+		toolkitpath:		Path to the interpolation toolkit codes
 		savepath:		Path to the final output directory for saving the DEM
 		datapath:		Path to the raw data files
 		datatype:		Type of data to be analyzed (file extension; e.g. 'las' for lidar tile files)
 		x0:			Minimum x-value of the grid
-		x1:  			Maximum x-value of the grid
+		x1:			Maximum x-value of the grid
 		y0: 			Minimum y-value of the grid
 		y1:			Maximum y-value of the grid
 		lambdaX:		Grid spacing in the x-direction
