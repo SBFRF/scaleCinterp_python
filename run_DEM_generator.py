@@ -7,7 +7,13 @@ Created on Thu Oct 16 09:33:00 2014
 
 import arcpy
 import numpy as np
-import os
+import os, time
+from scipy.io import netcdf
+from dataBuilder import dataBuilder
+from list_files import list_files
+from gridBuilder import gridBuilder
+from subsampleData import subsampleData
+from scalecInterpolation import scalecInterpTilePerturbations
 
 WorkingDir = "%scratchworkspace%"
 
@@ -25,30 +31,31 @@ WorkingDir = "%scratchworkspace%"
 
 
 # Define inputs (will eventually come from ScienceBase user interface)
-toolkitpath = 'D:\\CDI_DEM\\geoprocessing'
-savepath = 'D:\\CDI_DEM\\geoprocessing'
-datapath = 'D:\\CDI_DEM\\2010_dauphin_lidar_test'
-datatype = 'las'
-x0 = -88.36
-x1 = -88
-y0 = 30.19
-y1 = 30.26
-lambdaX = 40
-lambdaY = 100
-msmoothx = 100
-msmoothy = 200
-msmootht = 1
-filtername = 'hanning'
-nmseitol = 0.75
-grid_coord_check = 'LL'
-data_coord_check = 'LL'
-grid_filename = ' '
+toolkitpath = 'D:\\CDI_DEM\\geoprocessing'            # Path to the interpolation toolkit codes
+savepath = 'D:\\CDI_DEM\\geoprocessing'               # Path to the final output directory for saving the DEM
+datapath = 'D:\\CDI_DEM\\2010_dauphin_lidar_test'     # Path to the raw data files
+datatype = 'las'                                      # Type of data to be analyzed (file extension; e.g. 'las' for lidar tile files)
+x0 = -88.36                                           # Minimum x-value of the grid
+x1 = -88                                              # Maximum x-value of the grid
+y0 = 30.19                                            # Minimum y-value of the grid
+y1 = 30.26                                            # Maximum y-value of the grid
+lambdaX = 40                                          # Grid spacing in the x-direction
+lambdaY = 100                                         # Grid spacing in the y-direction
+msmoothx = 100                                        # Smoothing length scale in the x-direction
+msmoothy = 200                                        # Smoothing length scale in the y-direction
+msmootht = 1                                          # Smoothing length scale in time
+filtername = 'hanning'                                # Name of the filter type to smooth the data
+nmseitol = 0.75                                       # Normalized error tolerance the user will tolerate in the final grid
+                                                      #      (0 - (no error) to 1 (no removal of bad points))
+grid_coord_check = 'LL'                               # ['LL' or 'UTM'] - Designates if the grid supplied by the user (if one exists)
+                                                      #      is in UTM or lat-lon coordinates
+data_coord_check = 'LL'                               # Name of the grid file (if supplied)
+grid_filename = ' '                                   # ['LL' or 'UTM'] - Designates if the data supplied by the user
+                                                      #      is in UTM or lat-lon coordinates
 
 # Call dataBuilder to construct data in necessary format for interpolation
-from list_files import list_files
 filelist = list_files(datapath, datatype)
 
-from dataBuilder import dataBuilder
 os.chdir(datapath)
 x, z = dataBuilder(filelist, data_coord_check)
 s = np.ones((np.size(x[:,1]),1))
@@ -56,7 +63,6 @@ lfile = np.shape(filelist)
 
 # Call grid builder to make a grid based on x,y min and max values
 os.chdir(toolkitpath)
-from gridBuilder import gridBuilder
 x_grid, y_grid = gridBuilder(x0, x1, y0, y1, lambdaX, lambdaY, grid_coord_check, grid_filename)
 t_grid = np.zeros((x_grid.shape))
 xi = np.array([x_grid.flatten(1), y_grid.flatten(1), t_grid.flatten(1)]).T
@@ -74,17 +80,14 @@ del y_grid
 del t_grid
 
 # subsample the data
-from subsampleData import subsampleData
 DXsmooth = np.array([msmoothx,msmoothy,msmootht])/4
 DXsmooth[2] = 1
-import time
 t = time.time()
 Xi, zprime, si = subsampleData(x,z,s,DXsmooth)
 elapsed = time.time() - t
 print 'subsampling time is %d seconds' % elapsed
 
 # Send it all into scalecinterpolation
-from scalecInterpolation import scalecInterpTilePerturbations
 t = time.time()
 print 'Interpolating'
 zi, msei, nmsei, msri = scalecInterpTilePerturbations(Xi, zprime, si, xi, lx, filtername, nmseitol)
@@ -100,7 +103,6 @@ nmsei = np.reshape(nmsei, (M,N))
 msri = np.reshape(msri, (M,N))
 
 # open a new netCDF file for writing.
-from scipy.io import netcdf 
 ncfile = netcdf.netcdf_file('DEM_output.nc', 'w')
 ncfile.history = 'Topo/Bathy DEM created using XXX'
 
