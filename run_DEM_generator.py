@@ -30,10 +30,10 @@ WorkingDir = "%scratchworkspace%"
 
 
 # Define inputs (will eventually come from ScienceBase user interface)
-toolkitpath = 'D:\\CDI_DEM\\geoprocessing'            # Path to the interpolation toolkit codes
-savepath = 'D:\\CDI_DEM\\geoprocessing'               # Path to the final output directory for saving the DEM
-datapath = 'D:\\CDI_DEM\\2010_dauphin_lidar_test'     # Path to the raw data files
-datatype = 'las'                                      # Type of data to be analyzed (file extension; e.g. 'las' for lidar tile files)
+toolkitpath = '' # D:\\CDI_DEM\\geoprocessing'        # Path to the interpolation toolkit codes - should be local to repo
+savepath = ''  # ''D:\\CDI_DEM\\geoprocessing'        # Path to the final output directory for saving the DEM
+datapath = 'http://bones/thredds/dodsC/FRF/survey/transect/FRF_20170227_1131_FRF_howNAVD88_LARC_GPS_UTC_v20170320.nc'     # Path to the raw data files
+datatype = 'nc'                                      # Type of data to be analyzed (file extension; e.g. 'las' for lidar tile files)
                                                       #     ['las', 'laz', 'nc', 'txt', 'mat']
 x0 = -88.36                                           # Minimum x-value of the grid
 x1 = -88                                              # Maximum x-value of the grid
@@ -50,8 +50,8 @@ nmseitol = 0.75                                       # Normalized error toleran
                                                       #      (0 - (no error) to 1 (no removal of bad points))
 grid_coord_check = 'LL'                               # ['LL' or 'UTM'] - Designates if the grid supplied by the user (if one exists)
                                                       #      is in UTM or lat-lon coordinates
-data_coord_check = 'LL'                               # Name of the grid file (if supplied)
-grid_filename = ' '                                   # ['LL' or 'UTM'] - Designates if the data supplied by the user
+grid_filename = ' '                     # interpolate to this              # Name of the grid file (if supplied)
+data_coord_check = 'LL'                               # ['LL' or 'UTM'] - Designates if the data supplied by the user
                                                       #      is in UTM or lat-lon coordinates
 
 # Call dataBuilder to construct data in necessary format for interpolation
@@ -65,11 +65,11 @@ lfile = np.shape(filelist)
 # Call grid builder to make a grid based on x,y min and max values
 os.chdir(toolkitpath)
 x_grid, y_grid = gridBuilder(x0, x1, y0, y1, lambdaX, lambdaY, grid_coord_check, grid_filename)
-t_grid = np.zeros((x_grid.shape))
+t_grid = np.zeros_like((x_grid))
 xi = np.array([x_grid.flatten(1), y_grid.flatten(1), t_grid.flatten(1)]).T
-xsm = msmoothx*np.ones(x_grid.shape)
-ysm = msmoothy*np.ones(y_grid.shape)
-tsm = msmootht*np.ones(t_grid.shape)
+xsm = msmoothx*np.ones_like(x_grid)
+ysm = msmoothy*np.ones_like(y_grid)
+tsm = msmootht*np.ones_like(t_grid)
 lx = np.array([xsm.flatten(1), ysm.flatten(1), tsm.flatten(1)]).T
 
 N, M = np.shape(x_grid)
@@ -79,22 +79,20 @@ y_out = y_grid[:,1].copy()
 del x_grid, y_grid, t_grid
 
 # subsample the data
-DXsmooth = np.array([msmoothx,msmoothy,msmootht])/4
+DXsmooth = np.array([msmoothx, msmoothy, msmootht])/4
 DXsmooth[2] = 1
 t = time.time()
 Xi, zprime, si = subsampleData(x,z,s,DXsmooth)
-elapsed = time.time() - t
-print 'subsampling time is %d seconds' % elapsed
+print 'subsampling time is %d seconds' % time.time() - t
 
 # Send it all into scalecinterpolation  -  Here is where the interpolation takes place
 t = time.time()
 print 'Interpolating'
 zi, msei, nmsei, msri = scalecInterpTilePerturbations(Xi, zprime, si, xi, lx, filtername, nmseitol)
-elapsed = time.time() - t
-print 'Interpolating time is %d seconds' % elapsed
+print 'Interpolating time is %d seconds' % time.time() - t
 
 # save the ouput
-os.chdir(savepath)
+#os.chdir(savepath)
 # reshape
 zi = np.reshape(zi, (M,N))
 msei = np.reshape(msei, (M,N))
@@ -102,7 +100,7 @@ nmsei = np.reshape(nmsei, (M,N))
 msri = np.reshape(msri, (M,N))
 
 # open a new netCDF file for writing.
-ncfile = netcdf.netcdf_file('DEM_output.nc', 'w')
+ncfile = netcdf.netcdf_file(savepath + 'DEM_output.nc', 'w')
 ncfile.history = 'Topo/Bathy DEM created using XXX'
 
 # create the lat and lon dimensions.

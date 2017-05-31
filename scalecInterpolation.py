@@ -382,7 +382,7 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
         # no evidence for grid, must interpolate all at once
         # send to stand-alone interp
         print 'output not a 2-d grid \n'
-        from scalecInterpolation import scalecInterp
+        #from scalecInterpolation import scalecInterp
         Zi, Msei, Nmsei, Msri = scalecInterp(x, z, s, xi, lx, filtername, nmseitol)
         return Zi, Msei, Nmsei, Msri
     

@@ -70,7 +70,7 @@ def subsampleData(X, z, e, Dx):
     e = e[:,np.newaxis]
     
     # Turn error into a weight
-    wtol = 0.1 # close enough
+    wtol = 0.1  # close enough
     from supportingMethods import consistentWeight
     tmp = z[:,0]
     tmp = tmp[:,np.newaxis]
@@ -79,7 +79,7 @@ def subsampleData(X, z, e, Dx):
     # map data to scaled points
     # J = 1,1...,1 is location X0(1,1,...,1)
     X0 = np.floor(X.min(0) / Dx) * Dx # make nice integer values
-    J = np.round(1 + (X - np.tile(X0,(N,1))) / np.tile(Dx,(N,1)))
+    J = np.round(1 + (X - np.tile(X0, (N,1))) / np.tile(Dx,(N,1)))
     
     # map these to index into multi-D array of unique indices
     Jn, Jm = np.shape(J)
