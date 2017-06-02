@@ -7,26 +7,31 @@ Created on Mon Jun 30 15:32:36 2014
 
 import scipy.io as sio
 import numpy as np
+import netCDF4 as nc
+import pyproj
 
 """ BUILD #1: """ 
 def readInDataSet(filename):
     dataX, dataY, dataZ = [], [], []              
     # Handle NetCDF files
     if filename.endswith('nc'):
-        from scipy.io import netcdf 
         try:
-            f = netcdf.netcdf_file(filename, 'r')
-            dataX = f.variables['x'][:]
-            dataY = f.variables['y'][:]
-            dataZ = f.variables['z'][:]
-        except IOError: 
+            ncfile = nc.Dataset(filename)
+            dataX = ncfile['x'][:]
+            dataY = ncfile['y'][:]
+            dataZ = ncfile['z'][:]
+        except IndexError:  # assume FRF ncfile keys
+            dataX = ncfile['lon'][:]
+            dataY = ncfile['lat'][:]
+            dataZ = ncfile['elevation']
+        except IOError:
             print '1 - cannot open', filename, 'it may not exist.  Please check path' 
     
-    # Handle LAZ files 
+    # Handle LAZ files
+
     elif filename.endswith('.laz'):
         print('is a LAZ file, this is not compatible now')
         # import laszip 
-    
     # Handle LAS files
     elif filename.endswith('.las'):
         from liblas import file
@@ -63,9 +68,9 @@ def readInDataSet(filename):
             #dataX = matFile['lidar']['E'][0][0]
             #dataY = matFile['lidar']['N'][0][0]
             #dataZ = matFile['lidar']['Z'][0][0]
-            dataX = matFile['data'][:,0]
-            dataY = matFile['data'][:,1]
-            dataZ = matFile['data'][:,2]
+            dataX = matFile['xi'][:,0]
+            dataY = matFile['xi'][:,1]
+            dataZ = matFile['xi'][:,2]
         except IOError: 
             print '4 - cannot open', filename, 'it may not exist.  Please check path'
     else:
@@ -81,7 +86,14 @@ def readInDataSet(filename):
     
     return dataX, dataY, dataZ
   
-def dataBuilder(filelist, data_coord_check):
+def dataBuilder(filelist, data_coord_check, EPSG=26918):
+    """
+    This function assumes UTM zone 18N at the FRF in NAD83
+    :param filelist:
+    :param data_coord_check:
+    :param EPSG:
+    :return:
+    """
     tempX, tempY, tempZ = [], [], [] 
     for files in filelist:
         dataX, dataY, dataZ = readInDataSet(files)
@@ -93,12 +105,13 @@ def dataBuilder(filelist, data_coord_check):
     z = tempZ[:,np.newaxis]
     
     if (data_coord_check == 'LL'):
-        import pyproj
-        UTM16N=pyproj.Proj("+init=EPSG:32616") # UTM coords, zone 16N, WGS84 datum
-        [xutm,yutm] = UTM16N(tempX, tempY)
+        UTM16N=pyproj.Proj("+init=EPSG:%s" % EPSG ) # 32618") # UTM coords, zone 18N, WGS84 datum  #
+        [xutm,yutm] = UTM16N(tempX, tempY) # convert to UTM coord
         x = np.array([xutm, yutm, np.zeros(xutm.size)]).T
+        # import utm
+        # [xutm, yutm, zoneNum, zoneLet] = utm.from_latlon(tempX, tempY)
+        # x = np.array([xutm, yutm, np.zeros(xutm.size)]).T
 
-    
     return x, z
 
 # load NOAA DEM
