@@ -13,31 +13,19 @@ from list_files import list_files
 from gridBuilder import gridBuilder
 from subsampleData import subsampleData
 from scalecInterpolation import scalecInterpTilePerturbations
+import datetime as DT
 
-WorkingDir = "%scratchworkspace%"
-
-# inputs from ArcGIS WPS
-#x0 = arcpy.GetParameterAsText(0)
-#x1 = arcpy.GetParameterAsText(1)
-#y0 = arcpy.GetParameterAsText(2)
-#y1 = arcpy.GetParameterAsText(3)
-#lambdaX = arcpy.GetParameterAsText(4)
-#lambdaY = arcpy.GetParameterAsText(5)
-#msmoothx = arcpy.GetParameterAsText(6)
-#msmoothy = arcpy.GetParameterAsText(7)
-#msmootht = arcpy.GetParameterAsText(8)
-#nmseitol = arcpy.GetParameterAsText(9)
 
 
 # Define inputs (will eventually come from ScienceBase user interface)
 toolkitpath = '' # D:\\CDI_DEM\\geoprocessing'        # Path to the interpolation toolkit codes - should be local to repo
 savepath = ''  # ''D:\\CDI_DEM\\geoprocessing'        # Path to the final output directory for saving the DEM
-datapath = 'http://bones/thredds/dodsC/FRF/survey/transect/FRF_20170227_1131_FRF_howNAVD88_LARC_GPS_UTC_v20170320.nc'     # Path to the raw data files
-datatype = 'nc'                                      # Type of data to be analyzed (file extension; e.g. 'las' for lidar tile files)
+datapath = '' #FRF_20170227_1131_FRF_NAVD88_LARC_GPS_UTC_v20170320.nc'     # Path to the raw data files
+# datatype = 'mat'                                      # Type of data to be analyzed (file extension; e.g. 'las' for lidar tile files)
                                                       #     ['las', 'laz', 'nc', 'txt', 'mat']
-x0 = -88.36                                           # Minimum x-value of the grid
+x0 = -88.36                                           # Minimum x-value of the grid (origin)
 x1 = -88                                              # Maximum x-value of the grid
-y0 = 30.19                                            # Minimum y-value of the grid
+y0 = 30.19                                            # Minimum y-value of the grid (origin)
 y1 = 30.26                                            # Maximum y-value of the grid
 lambdaX = 40                                          # Grid spacing in the x-direction
 lambdaY = 100                                         # Grid spacing in the y-direction
@@ -50,22 +38,23 @@ nmseitol = 0.75                                       # Normalized error toleran
                                                       #      (0 - (no error) to 1 (no removal of bad points))
 grid_coord_check = 'LL'                               # ['LL' or 'UTM'] - Designates if the grid supplied by the user (if one exists)
                                                       #      is in UTM or lat-lon coordinates
-grid_filename = ' '                     # interpolate to this              # Name of the grid file (if supplied)
+grid_filename = ' '                     # interpolate to this background grid??          # Name of the grid file (if supplied)
 data_coord_check = 'LL'                               # ['LL' or 'UTM'] - Designates if the data supplied by the user
                                                       #      is in UTM or lat-lon coordinates
+outFname = 'TestOutput.nc'
+
 
 # Call dataBuilder to construct data in necessary format for interpolation
-filelist = list_files(datapath, datatype)
-
-os.chdir(datapath)
+# filelist = list_files(datapath, datatype)  # creates a list of files to be interpolated
+filelist = ['FRF_20170518_1134_FRF_NAVD88_LARC_GPS_UTC_v20170525.nc']  # files with NEW data that are in background grid
+# os.chdir(datapath)
 x, z = dataBuilder(filelist, data_coord_check)
 s = np.ones((np.size(x[:,1]),1))
-lfile = np.shape(filelist)
 
 # Call grid builder to make a grid based on x,y min and max values
-os.chdir(toolkitpath)
+# os.chdir(toolkitpath)
 x_grid, y_grid = gridBuilder(x0, x1, y0, y1, lambdaX, lambdaY, grid_coord_check, grid_filename)
-t_grid = np.zeros_like((x_grid))
+t_grid = np.zeros_like((x_grid))  # dummy values, for time?
 xi = np.array([x_grid.flatten(1), y_grid.flatten(1), t_grid.flatten(1)]).T
 xsm = msmoothx*np.ones_like(x_grid)
 ysm = msmoothy*np.ones_like(y_grid)
@@ -81,26 +70,27 @@ del x_grid, y_grid, t_grid
 # subsample the data
 DXsmooth = np.array([msmoothx, msmoothy, msmootht])/4
 DXsmooth[2] = 1
-t = time.time()
-Xi, zprime, si = subsampleData(x,z,s,DXsmooth)
-print 'subsampling time is %d seconds' % time.time() - t
+t = DT.datetime.now()
+Xi, zprime, si = subsampleData(x, z, s, DXsmooth)
+print 'subsampling time is %s seconds' % (DT.datetime.now() - t)
 
 # Send it all into scalecinterpolation  -  Here is where the interpolation takes place
-t = time.time()
+t = DT.datetime.now()
 print 'Interpolating'
 zi, msei, nmsei, msri = scalecInterpTilePerturbations(Xi, zprime, si, xi, lx, filtername, nmseitol)
-print 'Interpolating time is %d seconds' % time.time() - t
+print 'Interpolating time is %s seconds' % (DT.datetime.now() - t)
 
 # save the ouput
-#os.chdir(savepath)
 # reshape
-zi = np.reshape(zi, (M,N))
+zi = np.reshape(zi, (M,N))  # what are these errors ???
 msei = np.reshape(msei, (M,N))
 nmsei = np.reshape(nmsei, (M,N))
 msri = np.reshape(msri, (M,N))
 
 # open a new netCDF file for writing.
-ncfile = netcdf.netcdf_file(savepath + 'DEM_output.nc', 'w')
+
+# save file to output
+ncfile = netcdf.netcdf_file(outFname, 'w')
 ncfile.history = 'Topo/Bathy DEM created using XXX'
 
 # create the lat and lon dimensions.

@@ -4,27 +4,14 @@ Created on Thu Oct 16 09:33:00 2014
 
 @author: jwlong
 """
-
-#import arcpy
 import numpy as np
 import os
 import time
+import list_files
 
 #WorkingDir = "%scratchworkspace%"
 
-# inputs from ArcGIS WPS
-#x0 = arcpy.GetParameterAsText(0)
-#x1 = arcpy.GetParameterAsText(1)
-#y0 = arcpy.GetParameterAsText(2)
-#y1 = arcpy.GetParameterAsText(3)
-#dx = arcpy.GetParameterAsText(4)
-#dy = arcpy.GetParameterAsText(5)
-#msmoothx = arcpy.GetParameterAsText(6)
-#msmoothy = arcpy.GetParameterAsText(7)
-#msmootht = arcpy.GetParameterAsText(8)
-#nmseitol = arcpy.GetParameterAsText(9)
-#Lysmooth =  arcpy.GetParameterAsText(10)
-#splinebc =  arcpy.GetParameterAsText(11)
+
 
 # Define inputs (will eventually come from ScienceBase user interface)
 toolkitpath = 'D:\\CDI_DEM\\geoprocessing'
@@ -94,8 +81,7 @@ grid_filename = ' '
 
 # Call dataBuilder to construct data in necessary format for interpolation
 os.chdir(toolkitpath)
-from list_files import list_files
-filelist = list_files(datapath, datatype)
+filelist = list_files.list_files(datapath, datatype)
 
 from dataBuilder import dataBuilder
 os.chdir(datapath)

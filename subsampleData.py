@@ -4,7 +4,10 @@ Created on Wed Nov 05 20:31:07 2014
 
 @author: jwlong
 """
-import numpy as np  
+import numpy as np
+from supportingMethods import consistentWeight
+
+
 def subsampleData(X, z, e, Dx):
     """ [Xi,zi, si, ni, Ji, Jmax, X0] = subsampleData(X,z,e,DX);
     
@@ -71,9 +74,8 @@ def subsampleData(X, z, e, Dx):
     
     # Turn error into a weight
     wtol = 0.1  # close enough
-    from supportingMethods import consistentWeight
-    tmp = z[:,0]
-    tmp = tmp[:,np.newaxis]
+    tmp = z[:, 0]
+    tmp = tmp[:, np.newaxis]
     w, s2 = consistentWeight(tmp, e, wtol) 
     del s2
     # map data to scaled points
