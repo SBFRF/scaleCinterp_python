@@ -76,20 +76,21 @@ def subsampleData(X, z, e, Dx):
     wtol = 0.1  # close enough
     tmp = z[:, 0]
     tmp = tmp[:, np.newaxis]
-    w, s2 = consistentWeight(tmp, e, wtol) 
-    del s2
+    w, _ = consistentWeight(tmp, e, wtol)
+
     # map data to scaled points
     # J = 1,1...,1 is location X0(1,1,...,1)
     X0 = np.floor(X.min(0) / Dx) * Dx # make nice integer values
     J = np.round(1 + (X - np.tile(X0, (N,1))) / np.tile(Dx,(N,1)))
     
     # map these to index into multi-D array of unique indices
-    Jn, Jm = np.shape(J)
-    tmp = np.array([])
+    _, Jm = np.shape(J)
+    tmp = []
     for i in range(0, Jm): # Create Jmax, the vector comprised of the max values of the columns of J
-        tmp = np.append(tmp, np.max(J[:,i]))
-    Jmax = tmp
-    del tmp, Jn # Jn was never actually needed
+        tmp.append(np.max(J[:,i]))
+
+    Jmax = np.array(tmp)
+    del tmp #, Jn # Jn was never actually needed
     Ji = np.ones((N,1), float)
     Jprod = 1
     for i in range(0,M):
@@ -158,7 +159,7 @@ def subsampleData(X, z, e, Dx):
 #            Xi[cnt,:] += X[sortid[i],:] * w[sortid[i]]
                 
     # eliminate cases with missing data (e.g., nans)
-    idd = np.where(ni.flatten(1) > 0) # ni is 1-d... but must still be flattened in order for idd to be of the appropriate dimensions
+    idd = np.where(ni.flatten() > 0) # ni is 1-d... but must still be flattened in order for idd to be of the appropriate dimensions
     ni = ni[idd]
     
     # means

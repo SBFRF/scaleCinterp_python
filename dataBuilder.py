@@ -46,6 +46,19 @@ def readInDataSet(filename):
         except IOError: 
             print ('2 - cannot open', filename, 'it may not exist.  Please check path')
         
+    elif filename.endswith('.xyz'):
+        # open file, read lines
+        f = open(filename)
+        lines = f.readlines()
+        f.close()
+        x, y, z, = [], [], []
+        # parse x y z of the lines
+        for line in lines:
+            split = line.split()
+            dataX.append(float(split[0]))
+            dataY.append(float(split[1]))
+            dataZ.append(float(split[2]))
+
     # Handle Ascii files
     elif filename.endswith('.txt'):
         # Modified from... http://stackoverflow.com/questions/16155494/python-parse-lines-of-input-file
@@ -88,6 +101,7 @@ def readInDataSet(filename):
   
 def dataBuilder(filelist, data_coord_check, EPSG=26918):
     """
+    this function reads data sets and converts to
     This function assumes UTM zone 18N at the FRF in NAD83
     :param filelist:
     :param data_coord_check:
@@ -111,7 +125,6 @@ def dataBuilder(filelist, data_coord_check, EPSG=26918):
         # import utm
         # [xutm, yutm, zoneNum, zoneLet] = utm.from_latlon(tempX, tempY)
         # x = np.array([xutm, yutm, np.zeros(xutm.size)]).T
-
     return x, z
 
 # load NOAA DEM
