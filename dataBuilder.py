@@ -122,9 +122,7 @@ def dataBuilder(filelist, data_coord_check, EPSG=26918):
         UTM16N=pyproj.Proj("+init=EPSG:%s" % EPSG ) # 32618") # UTM coords, zone 18N, WGS84 datum  #
         [xutm,yutm] = UTM16N(tempX, tempY) # convert to UTM coord
         x = np.array([xutm, yutm, np.zeros(xutm.size)]).T
-        # import utm
-        # [xutm, yutm, zoneNum, zoneLet] = utm.from_latlon(tempX, tempY)
-        # x = np.array([xutm, yutm, np.zeros(xutm.size)]).T
+
     return x, z
 
 # load NOAA DEM
