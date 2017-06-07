@@ -23,22 +23,22 @@ savepath = ''  # ''D:\\CDI_DEM\\geoprocessing'        # Path to the final output
 datapath = '' #FRF_20170227_1131_FRF_NAVD88_LARC_GPS_UTC_v20170320.nc'     # Path to the raw data files
 # datatype = 'mat'                                      # Type of data to be analyzed (file extension; e.g. 'las' for lidar tile files)
                                                       #     ['las', 'laz', 'nc', 'txt', 'mat']
-x0 = -75.47218285                                  # Minimum x-value of the output grid (origin)
+x0 = -75.47218285                                     # Minimum x-value of the output grid (origin)
 x1 = -75.75004989                                              # Maximum x-value of the output grid
-y0 = 36.19666112                                        # Minimum y-value of the output grid (origin)
-y1 = 36.17560399                                            # Maximum y-value of the output grid
-lambdaX = 5                                           # Grid spacing in the x-direction
-lambdaY = 5                                           # Grid spacing in the y-direction
-msmoothx = 100                                        # Smoothing length scale in the x-direction
-msmoothy = 200                                        # Smoothing length scale in the y-direction
-msmootht = 1                                          # Smoothing length scale in time
+y0 = 36.17560399                                      # Minimum y-value of the output grid (origin)
+y1 = 36.19666112                                      # Maximum y-value of the output grid
+lambdaX = 1000                                        # Grid spacing in the x-direction
+lambdaY = 1000                                         # Grid spacing in the y-direction
+msmoothx = 100                                        # Smoothing length scale in the x-direction meters
+msmoothy = 200                                        # Smoothing length scale in the y-direction meters
+msmootht = 1                                          # Smoothing length scale in time ???
 filtername = 'hanning'                                # Name of the filter type to smooth the data
                                                       #      ['hanning', 'linloess', 'quadloess', 'boxcar', si']
 nmseitol = 0.75                                       # Normalized error tolerance the user will tolerate in the final grid
                                                       #      (0 - (no error) to 1 (no removal of bad points))
 grid_coord_check = 'LL'                               # ['LL' or 'UTM'] - Designates if the grid supplied by the user (if one exists)
                                                       #      is in UTM or lat-lon coordinates
-grid_filename = ' '                # interpolate to this background grid??          # Name of the grid file (if supplied)
+grid_filename = ''                                   # Name of the grid file (if supplied)
 outFname = 'TestOutput.nc'
 ###########################
 data_coord_check = 'LL' #, 'NCSP']                               # ['LL' or 'UTM'] - Designates if the data supplied by the user
@@ -48,19 +48,21 @@ data_coord_check = 'LL' #, 'NCSP']                               # ['LL' or 'UTM
 
 # Call dataBuilder to construct data in necessary format for interpolation
 # filelist = list_files(datapath, datatype)  # creates a list of files to be interpolated
-filelist = ['FRF_20170518_1134_FRF_NAVD88_LARC_GPS_UTC_v20170525.nc',
-           'newNAVD88.xyz']  # files with NEW data that are in background grid
+#filelist = #['FRF_20170518_1134_FRF_NAVD88_LARC_GPS_UTC_v20170525.nc'
+filelist =  ['newNAVD88.xyz']  # files with NEW data that are in background grid
+####################################################################
+# ############################### Load Data ########################
+####################################################################
 
-# ############################### Load Data
 t = DT.datetime.now()
 x, z = dataBuilder(filelist, data_coord_check)  # function loads x, y, z data and concatenates in long array
 s = np.ones((np.size(x[:,1]),1))
 print 'loading time is %s seconds' % (DT.datetime.now() - t)
 
-
 ####################################################################
 # Call grid builder to make a grid based on x,y min and max values #
 ####################################################################
+
 x_grid, y_grid = gridBuilder(x0, x1, y0, y1, lambdaX, lambdaY, grid_coord_check, grid_filename)
 t_grid = np.zeros_like((x_grid))  # dummy values, for time?
 xi = np.array([x_grid.flatten(), y_grid.flatten(), t_grid.flatten()]).T  # grid locations, flatten make row-major style

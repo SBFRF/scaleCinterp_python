@@ -70,7 +70,7 @@ def subsampleData(X, z, e, Dx):
         # just square it
         e = e**2
     
-    e = e[:,np.newaxis]
+    e = e[:, np.newaxis]
     
     # Turn error into a weight
     wtol = 0.1  # close enough
@@ -101,7 +101,7 @@ def subsampleData(X, z, e, Dx):
     
     # sort them
     #[Jisort, sortid] = sort(Ji) ##### MATLAB ORIGINAL #####
-    sortid = np.argsort(Ji, axis=0).flatten(1)
+    sortid = np.argsort(Ji, axis=0).flatten()
     Jisort = Ji[sortid]
     w = w[sortid]
     e = e[sortid]
@@ -113,28 +113,32 @@ def subsampleData(X, z, e, Dx):
     # Ni = np.sum(np.diff(Jisort, axis=0) > 0) + 1
     
     # initialize output arrays that are as large as the largest index
-    zi = np.zeros((Ni.shape[0],1), float) #np.tile(0,(Ni,r)) # holds weighted sum, initially
-    ni = np.zeros((Ni.shape[0],1), float) # number of observations
-    wi = np.zeros((Ni.shape[0],1), float) # sum of weights
-    w2zi = np.zeros((Ni.shape[0],1), float) # weights against data
-    w2ei = np.zeros((Ni.shape[0],1), float) # weights against a priori errors
-    w2i = np.zeros((Ni.shape[0],1), float) # sum of squared weights
-    si = np.zeros((Ni.shape[0],1), float) # holds weighted sum of squares, initially
-    Ji = np.zeros((Ni.shape[0],1), float)
-    Xi = np.zeros((Ni.shape[0],M), float)#np.tile(0,(Ni,M))
+    zi = np.zeros((Ni.shape[0],1), dtype=float) #np.tile(0,(Ni,r)) # holds weighted sum, initially
+    ni = np.zeros((Ni.shape[0],1), dtype=float) # number of observations
+    wi = np.zeros((Ni.shape[0],1),dtype= float) # sum of weights
+    w2zi = np.zeros((Ni.shape[0],1), dtype=float) # weights against data
+    w2ei = np.zeros((Ni.shape[0],1), dtype=float) # weights against a priori errors
+    w2i = np.zeros((Ni.shape[0],1), dtype=float) # sum of squared weights
+    si = np.zeros((Ni.shape[0],1), dtype=float) # holds weighted sum of squares, initially
+    Ji = np.zeros((Ni.shape[0],1), dtype=float)
+    Xi = np.zeros((Ni.shape[0],M), dtype=float)#np.tile(0,(Ni,M))
     
     # scan through observations
     for i in range(Ni.shape[0]):
-        ind = np.where(Jisort == Ni[i])
-        ni[i] = len(ind[0])
-        wi[i] = sum(w[ind[0]])
-        w2i[i] = sum(w[ind[0]]**2)
-        zi[i] = sum(z[ind[0]] * w[ind[0]])
-        w2zi[i] = sum(z[ind[0]] * (w[ind[0]]**2))
-        si[i] = sum((z[ind[0]] * w[ind[0]])**2)
-        w2ei[i] = sum(e[ind[0]] * (w[ind[0]]**2))
-        Xi[i,:] = sum(X[ind[0],:] * w[ind[0]])
-        del ind
+        # print '%.2f Percent Complete ' % (float(i)/Ni.shape[0])
+        ind = np.where(Jisort == Ni[i])[0]
+        ni[i] = len(ind)
+        wind = w[ind]  # calculating these things only ones
+        wind2 = wind ** 2
+
+        wi[i] = sum(wind)
+        w2i[i] = sum(wind2)
+        zi[i] = sum(z[ind] * wind)
+        w2zi[i] = sum(z[ind] * wind2)
+        si[i] = sum((z[ind] * wind)**2)
+        w2ei[i] = sum(e[ind] * wind2)
+        Xi[i,:] = sum(X[ind,:] * wind)
+        # del ind
         
 #    cnt = 0
 #    Ji[0] = Jisort[0]
