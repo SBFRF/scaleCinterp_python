@@ -83,20 +83,20 @@ def makeWBFlow(Ylocal, Nysmooth, mindyg):
     
     return wbflow
     
-    """ THE BELOW MAY NOT BE NEEDED
-    wb = 1-(Ei)/(wbfloor + Ei)
-    if(isflow > 0):
-        # change the spline type
-        #splinebc = [1,10] # different xshore,yshore bc
-        # force to uniform
-        #wb = wb.*(1-wbflow)
-        wb = wb * wbflow
-    
-    from bspline import bspline_pertgrid
-    Zbs = bspline_pertgrid(Zi * (wbflow ** 2), wb, splinebcpert, splinelc, splinedxm)
-    
-    return wbflow    
-    """    
+    # """ THE BELOW MAY NOT BE NEEDED
+    # wb = 1-(Ei)/(wbfloor + Ei)
+    # if(isflow > 0):
+    #     # change the spline type
+    #     #splinebc = [1,10] # different xshore,yshore bc
+    #     # force to uniform
+    #     #wb = wb.*(1-wbflow)
+    #     wb = wb * wbflow
+    #
+    # from bspline import bspline_pertgrid
+    # Zbs = bspline_pertgrid(Zi * (wbflow ** 2), wb, splinebcpert, splinelc, splinedxm)
+    #
+    # return wbflow
+    # """
     
 def consistentWeight(z, e2, wtol=0.1):
     """
@@ -179,10 +179,10 @@ def svd_invP(m, p):
             dd[i,i] = 1/d[i,i]
         else:
             n += 1
-    """
-    if (n>0):
-        #print n,' un-used columns');
-    """
+    # """
+    # if (n>0):
+    #     #print n,' un-used columns');
+    # """
     # now do the inverse thing
     m_inv = v * (dd.conj().T) * (u.conj().T)#u.H)
     return m_inv
@@ -326,7 +326,7 @@ def loess_kernelND(d, p, Dx=0.05):
     r = r * np.kron(np.ones((1,m), float), w)
     
     # get the scaling matrix-- solves linear regression
-    Xx = np.dot(Xw.conj().T, Xw) / (N**d)# Use numpy.dot to do matrix multiplication
+    Xx = np.dot(Xw.conj().T, Xw) / (N**d)  # Use numpy.dot to do matrix multiplication
     from numpy.linalg import inv
     Xx_inv = inv(Xx)
     
@@ -337,28 +337,28 @@ def loess_kernelND(d, p, Dx=0.05):
     ar = tmp * (w / N) # Use numpy dot product to do matrix multiplication
     r = x 
     return r, ar
-    """
-    # or continue to see the beast in N-dimensional space
-    # and this is the thing that is mult against the weighted data
-    bX = np.dot(Xw, Xx_inv[:,0])
-    bX = np.reshape(bX, (np.size(bX, axis=0), 1))
-    
-    # so put the weight in this thing, rather than data, to get the indicator
-    # function
-    tmp1 = np.reshape(bX[:,0], (np.size(bX[:,0], axis=0), 1))
-    a = tmp1 * W
-    
-    # and reshape
-    if (d == 1):
-        A = a
-    else:
-        A = np.reshape(a, (N, N))#np.shape(N * np.ones((1,d), float)))
-    
-    # here is the 3-d surface in 1-d
-    ar = A[:, (N+1)/2, (N+1)/2]
-    
-    #return r, ar
-    """
+    # """
+    # # or continue to see the beast in N-dimensional space
+    # # and this is the thing that is mult against the weighted data
+    # bX = np.dot(Xw, Xx_inv[:,0])
+    # bX = np.reshape(bX, (np.size(bX, axis=0), 1))
+    #
+    # # so put the weight in this thing, rather than data, to get the indicator
+    # # function
+    # tmp1 = np.reshape(bX[:,0], (np.size(bX[:,0], axis=0), 1))
+    # a = tmp1 * W
+    #
+    # # and reshape
+    # if (d == 1):
+    #     A = a
+    # else:
+    #     A = np.reshape(a, (N, N))#np.shape(N * np.ones((1,d), float)))
+    #
+    # # here is the 3-d surface in 1-d
+    # ar = A[:, (N+1)/2, (N+1)/2]
+    #
+    # #return r, ar
+    # """
     
 def regr_xzw(X, z, w=None, nargout=2):    
     """ 
@@ -462,55 +462,55 @@ def regr_xzw(X, z, w=None, nargout=2):
         nmse = np.dot(a.conj().T, a)
     
     return b, brmse, sk, n, msz, msr, nmse
-    """
-    Notes
-     get the right error estimate
-     read priestly, page 368: mse/msr ~ chi-sq(m)/(N-m)
-     here is argument:
-     var_observed = var_model + var_residual = var_true + var_noise
-     and
-     var_model = var_true + var_artificial
-        var_true is variance of perfect model 
-        var_noise is additive white noise
-        var_artificial is due to random correlations, i.e., aliased
-     a linear model will pick up this much of noise
-     var_a = (m/N) var_n, our extra bit of information
-     Thus,
-     var_n = var_r + var_a = var_r + (m/N) var_n = var_r /(1-m/N) 
-           = var_r*N/(N-m), expected value
-     and
-     var_a = var_r (m/N)/(1-m/N)
-           = (m/(N-m)) var_r
-     thus: mse_of_model = ( msr*m/(N-m) );
-     this is plausible error in model, assumed uniform over range of data
-     BUT, we are interested in error of estimate of b(1), the value at x=0
-     See priestly page on regression models, which states that 
-     b are normally dist. around b_true, with var(b) = var_noise*diag(XX_inv)
-     msn = msr*N/(N-m);
-     mse_of_b(1) = XX_inv(1)*msn/N; -- Look to the F-dist to explain ratio of variances
-     after testing synthetic examples, conclude that this is robust 
-     even leaving large mean values in!
-    
-     note on weighted least squares
-     replace N with sumW where sumW= sum of weights and weights ~ 1/sigma_noise
-     for Q to insert between all the cross-correlations 
-    
-     test
-     for j=1:100
-         N=10; X=[ones(N,1),[1:N]']; z = 1*randn(N,1)+[1:N]'; w=ones(N,1); %w(1:5)=0.5;
-         [b,brmse,sk,n,msz,msr,nmse] = regr_xzw(X,z,w);
-         S(j).sk = sk;
-         S(j).brmse=brmse';
-         S(j).b=b';
-     end
-     actual parameter error
-      mean(cat(1,S.b)) =  0.0059    1.0080
-      std(cat(1,S.b))  =  0.6699    0.1069
-     predicted parameter errors
-      mean(cat(1,S.brmse))  =    0.6467    0.1042
-     variance of parameter errors (just to show that it is relatively small)
-      std(cat(1,S.brmse)) =      0.1768    0.0285
-    """
+    # """
+    # Notes
+    #  get the right error estimate
+    #  read priestly, page 368: mse/msr ~ chi-sq(m)/(N-m)
+    #  here is argument:
+    #  var_observed = var_model + var_residual = var_true + var_noise
+    #  and
+    #  var_model = var_true + var_artificial
+    #     var_true is variance of perfect model
+    #     var_noise is additive white noise
+    #     var_artificial is due to random correlations, i.e., aliased
+    #  a linear model will pick up this much of noise
+    #  var_a = (m/N) var_n, our extra bit of information
+    #  Thus,
+    #  var_n = var_r + var_a = var_r + (m/N) var_n = var_r /(1-m/N)
+    #        = var_r*N/(N-m), expected value
+    #  and
+    #  var_a = var_r (m/N)/(1-m/N)
+    #        = (m/(N-m)) var_r
+    #  thus: mse_of_model = ( msr*m/(N-m) );
+    #  this is plausible error in model, assumed uniform over range of data
+    #  BUT, we are interested in error of estimate of b(1), the value at x=0
+    #  See priestly page on regression models, which states that
+    #  b are normally dist. around b_true, with var(b) = var_noise*diag(XX_inv)
+    #  msn = msr*N/(N-m);
+    #  mse_of_b(1) = XX_inv(1)*msn/N; -- Look to the F-dist to explain ratio of variances
+    #  after testing synthetic examples, conclude that this is robust
+    #  even leaving large mean values in!
+    #
+    #  note on weighted least squares
+    #  replace N with sumW where sumW= sum of weights and weights ~ 1/sigma_noise
+    #  for Q to insert between all the cross-correlations
+    #
+    #  test
+    #  for j=1:100
+    #      N=10; X=[ones(N,1),[1:N]']; z = 1*randn(N,1)+[1:N]'; w=ones(N,1); %w(1:5)=0.5;
+    #      [b,brmse,sk,n,msz,msr,nmse] = regr_xzw(X,z,w);
+    #      S(j).sk = sk;
+    #      S(j).brmse=brmse';
+    #      S(j).b=b';
+    #  end
+    #  actual parameter error
+    #   mean(cat(1,S.b)) =  0.0059    1.0080
+    #   std(cat(1,S.b))  =  0.6699    0.1069
+    #  predicted parameter errors
+    #   mean(cat(1,S.brmse))  =    0.6467    0.1042
+    #  variance of parameter errors (just to show that it is relatively small)
+    #   std(cat(1,S.brmse)) =      0.1768    0.0285
+    # """
 
 
 
