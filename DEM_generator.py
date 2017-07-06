@@ -8,8 +8,8 @@ Created on Thu Oct 16 09:33:00 2014
 import numpy as np
 import os, time
 from scipy.io import netcdf
-from dataBuilder import dataBuilder
-from gridBuilder import gridBuilder
+from dataBuilder import dataBuilder, gridBuilder
+# from gridBuilder import gridBuilder
 from subsampleData import subsampleData
 from scalecInterpolation import scalecInterpTilePerturbations
 import datetime as DT
@@ -26,8 +26,8 @@ x0 = -75.47218285                                     # Minimum x-value of the o
 x1 = -75.75004989                                              # Maximum x-value of the output grid
 y0 = 36.17560399                                      # Minimum y-value of the output grid (origin)
 y1 = 36.19666112                                      # Maximum y-value of the output grid
-lambdaX = 1000                                        # Grid spacing in the x-direction
-lambdaY = 1000                                         # Grid spacing in the y-direction
+lambdaX = 10                                        # Grid spacing in the x-direction
+lambdaY = 10                                         # Grid spacing in the y-direction
 msmoothx = 100                                        # Smoothing length scale in the x-direction
 msmoothy = 200                                        # Smoothing length scale in the y-direction
 msmootht = 1                                          # Smoothing length scale in time
@@ -44,18 +44,28 @@ data_coord_check = 'LL' #, 'NCSP']                               # ['LL' or 'UTM
                                                       #      is in UTM or lat-lon coordinates
 
 
-
-# Call dataBuilder to construct data in necessary format for interpolation
-# filelist = list_files(datapath, datatype)  # creates a list of files to be interpolated
-filelist = ['FRF_20170518_1134_FRF_NAVD88_LARC_GPS_UTC_v20170525.nc',
-           'newNAVD88.xyz']  # files with NEW data that are in background grid
-
 def DEM_generator(dict):
     """
-
     :param dict:
-    :return:
+    x0                          # Minimum x-value of the output grid (origin)
+    y0                          # Minimum y-value of the output grid
+    x1                          # Maximum x-value of the output grid
+    y1                          # Maximum y-value of the output grid
+    lambdaY                     # grid spacing in the y-direction
+    lambdaX                     # Grid spacing in the x-direction
+    msmoothx                    # Smoothing length scale in the x-direction
+    msmoothy                    # Smoothing length scale in the y-direction
+    msmootht                    # Smoothing length scale in time
+    filtername                  # Name of the filter type to smooth the data
+                                #      ['hanning', 'linloess', 'quadloess', 'boxcar', si']
+    nmseitol                    # Normalized error tolerance the user will tolerate in the final grid
+                                #      (0 - (no error) to 1 (no removal of bad points))
 
+    :return: dict with keys:
+        zi, the depth estimate
+        msei, the mean square interpolation error estimate (units of z)
+        nmsei, the normalized mean square error
+        msri, the mean square residuals
     """
     x0 = dict['x0']             # Minimum x-value of the output grid (origin)
     y0 = dict['y0']             # Minimum y-value of the output grid
@@ -63,11 +73,17 @@ def DEM_generator(dict):
     y1 = dict['y1']             # Maximum y-value of the output grid
     lambdaY = dict['lambdaY']   # grid spacing in the y-direction
     lambdaX = dict['lambdaX']   # Grid spacing in the x-direction
-    msmoothx = dict['msmoothX']
-    msmoothy = dict['msmoothY']
-    msmootht = dict['msmoothT']
-    filtername = dict['filterName']
-    nmseitol = dict['nmseitol']
+    msmoothx = dict['msmoothx'] # Smoothing length scale in the x-direction
+    msmoothy = dict['msmoothy'] # Smoothing length scale in the y-direction
+    msmootht = dict['msmootht'] # Smoothing length scale in time
+    filtername = dict['filterName']  # Name of the filter type to smooth the data
+                                     #      ['hanning', 'linloess', 'quadloess', 'boxcar', si']
+    nmseitol = dict['nmseitol']  # Normalized error tolerance the user will tolerate in the final grid
+                                                      #      (0 - (no error) to 1 (no removal of bad points))
+
+    #### data checks ###########3
+    filters = ['hanning', 'linloess', 'quadloess', 'boxcar', 'si']
+    assert filtername in filters, 'Check filter name, not appropriate for current DEM generator function'
     ####################################################################
     # ############################### Load Data ########################
     ####################################################################
@@ -100,6 +116,7 @@ def DEM_generator(dict):
     DXsmooth[2] = 1
     t = DT.datetime.now()
     Xi, zprime, si = subsampleData(x, z, s, DXsmooth)
+    # What's returned here
     print 'subsampling time is %s seconds' % (DT.datetime.now() - t)
 
     #####################################################################
@@ -116,6 +133,49 @@ def DEM_generator(dict):
     msei = np.reshape(msei, (M,N))
     nmsei = np.reshape(nmsei, (M,N))
     msri = np.reshape(msri, (M,N))
+
+       # zi, the estimate
+       # msei, the mean square interpolation error estimate (units of z)
+       # nmsei, the normalized mean square error
+       # msri, the mean square residuals
+    out = {'Zi': zi,
+           'MSEi': msei,
+           'NMSEi': nmsei,
+           'MSRi': msri}
+    return out
+
+
+
+
+
+
+
+# ########## scratch
+from sblib import geoprocess as gp
+
+# Call dataBuilder to construct data in necessary format for interpolation
+# filelist = list_files(datapath, datatype)  # creates a list of files to be interpolated
+filelist = ['FRF_20170518_1134_FRF_NAVD88_LARC_GPS_UTC_v20170525.nc',]  # files with NEW data that are in background grid
+
+x0, y0 = 1600, 1600  # north east corner of grid
+x1, y1 = 0, -200     # south west corner of grid
+dict = {'x0': gp.FRFcoord(x0, y0)['Lon'],  # -75.47218285,
+        'y0': gp.FRFcoord(x0, y0)['Lat'],  #  36.17560399,
+        'x1': gp.FRFcoord(x1, y1)['Lon'],  # -75.75004989,
+        'y1': gp.FRFcoord(x1, y1)['Lat'],  #  36.19666112,
+        'lambdaX': 10,  # grid spacing in x  -  Here is where CMS would hand array of variable grid spacing
+        'lambdaY': 10,  # grid spacing in y
+        'msmoothx': 100,  # smoothing length scale
+        'msmoothy': 200,  # smoothing length scale
+        'filtername': 'hanning',
+        'nmseitol': 0.75,
+        'grid_coord_check': 'LL',
+        'grid_filename': '',  # should be none if creating background Grid!  becomes best guess grid
+        'data_coord_check': 'LL',
+        'outFname': 'TestOutput.nc'}
+
+
+
 ######################################################################
 # open a new netCDF file for writing.
 ######################################################################
