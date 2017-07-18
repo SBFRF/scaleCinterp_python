@@ -8,25 +8,27 @@ Created on Thu Oct 16 09:33:00 2014
 import numpy as np
 import os, time
 from scipy.io import netcdf
-from dataBuilder import dataBuilder
-from list_files import list_files
-from gridBuilder import gridBuilder
+from dataBuilder import dataBuilder, gridBuilder
+# from list_files import list_files
+# from gridBuilder import gridBuilder
 from subsampleData import subsampleData
 from scalecInterpolation import scalecInterpTilePerturbations
 import datetime as DT
+from sblib import geoprocess as gp
 
 
-
+p1 = gp.FRFcoord(3000, 2000)
+p2 = gp.FRFcoord(0, -500 )
 # Define inputs (will eventually come from ScienceBase user interface)
 toolkitpath = '' # D:\\CDI_DEM\\geoprocessing'        # Path to the interpolation toolkit codes - should be local to repo
 savepath = ''  # ''D:\\CDI_DEM\\geoprocessing'        # Path to the final output directory for saving the DEM
 datapath = '' #FRF_20170227_1131_FRF_NAVD88_LARC_GPS_UTC_v20170320.nc'     # Path to the raw data files
-# datatype = 'mat'                                      # Type of data to be analyzed (file extension; e.g. 'las' for lidar tile files)
+# datatype = 'mat'                                    # Type of data to be analyzed (file extension; e.g. 'las' for lidar tile files)
                                                       #     ['las', 'laz', 'nc', 'txt', 'mat']
-x0 = -75.47218285                                     # Minimum x-value of the output grid (origin)
-x1 = -75.75004989                                              # Maximum x-value of the output grid
-y0 = 36.17560399                                      # Minimum y-value of the output grid (origin)
-y1 = 36.19666112                                      # Maximum y-value of the output grid
+x0 = p1['Lon']                                        # Minimum x-value of the output grid (origin)
+x1 = p2['Lon']                                              # Maximum x-value of the output grid
+y0 = p1['Lat']                                      # Minimum y-value of the output grid (origin)
+y1 = p2['Lat']                                     # Maximum y-value of the output grid
 lambdaX = 1000                                        # Grid spacing in the x-direction
 lambdaY = 1000                                         # Grid spacing in the y-direction
 msmoothx = 100                                        # Smoothing length scale in the x-direction meters
@@ -48,7 +50,7 @@ data_coord_check = 'LL' #, 'NCSP']                               # ['LL' or 'UTM
 
 # Call dataBuilder to construct data in necessary format for interpolation
 # filelist = list_files(datapath, datatype)  # creates a list of files to be interpolated
-#filelist = #['FRF_20170518_1134_FRF_NAVD88_LARC_GPS_UTC_v20170525.nc'
+# filelist = ['FRF_20170518_1134_FRF_NAVD88_LARC_GPS_UTC_v20170525.nc']
 filelist =  ['newNAVD88.xyz']  # files with NEW data that are in background grid
 ####################################################################
 # ############################### Load Data ########################
