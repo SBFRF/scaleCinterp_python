@@ -159,7 +159,7 @@ Created on Thu Oct 16 11:25:54 2014
 
 @author: jwlong
 
-# this was brought in from another file
+# this was brought in from another file, - SB
 """
 def gridBuilder(x0, x1, y0, y1, dx, dy, grid_coord_check, grid_filename, EPSG=26918):
     """
@@ -192,10 +192,10 @@ def gridBuilder(x0, x1, y0, y1, dx, dy, grid_coord_check, grid_filename, EPSG=26
         y0 = np.round(y0, decimals=0)
         y1 = np.round(y1, decimals=0)
 
-        numGridPointsX = np.abs((x1 - x0) / dx)  # this assumes finite difference grid (points are vertex located)
+        numGridPointsX = np.abs((x1 - x0) / dx)  # this assumes finite difference grid (points are vertex located) - sb
         numGridPointsY = np.abs((y1 - y0) / dy)
         x_grid, y_grid = np.meshgrid(np.linspace(x0, x1, numGridPointsX), np.linspace(y0, y1, numGridPointsY))
-        pass
+        # pass
     else:
         try:
             gridFile = sio.loadmat(grid_filename)  # Currently only works with MAT file

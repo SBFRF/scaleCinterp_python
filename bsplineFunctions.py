@@ -31,7 +31,6 @@ def bspline_basis(y):
     return y
 
 def bspline_compute(x, z, w, xm, dxm, lc, bctype=9, nargout=3):
-    import bspline_basis
     """
     Created on Fri Jul 25 11:30:47 2014
     
