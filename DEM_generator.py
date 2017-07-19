@@ -117,7 +117,7 @@ def DEM_generator(dict):
     DXsmooth[2] = 1  # this hard codes a time smoothing of 1 (unit?)
     t = DT.datetime.now()
     Xi, zprime, si = subsampleData(x, z, s, DXsmooth)
-    # a plot to compare original data to subsampled data 
+    # a plot to compare original data to subsampled data
     from matplotlib import pyplot as plt
     plt.figure()
     plt.suptitle('%s' %filelist[0])
@@ -143,10 +143,10 @@ def DEM_generator(dict):
 
     # save the ouput
     # reshape
-    zi = np.reshape(zi, (M,N))  # what are these errors ???
-    msei = np.reshape(msei, (M,N))
-    nmsei = np.reshape(nmsei, (M,N))
-    msri = np.reshape(msri, (M,N))
+    zi = np.reshape(zi, (N,M))  # what are these errors ???
+    msei = np.reshape(msei, (N,M))
+    nmsei = np.reshape(nmsei, (N,M))
+    msri = np.reshape(msri, (N,M))
 
        # zi, the estimate
        # msei, the mean square interpolation error estimate (units of z)
