@@ -129,6 +129,7 @@ def DEM_generator(dict):
     plt.plot(np.sqrt(x[:, 0]**2 + x[:, 1]**2), z, '.', label='raw')
     plt.plot( np.sqrt(Xi[:,0]**2 + Xi[:,1]**2), zprime, '.', label='subsampled')
     plt.legend()
+    plt.close()
 
     # What's returned here
     print 'subsampling time is %s seconds' % (DT.datetime.now() - t)

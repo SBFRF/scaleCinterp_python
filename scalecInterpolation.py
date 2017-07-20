@@ -332,7 +332,7 @@ def scalecInterp(x, z, s, xi, lx, filtername, nmseitol):
 
 def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     """
-     [Zi, Msei, Nmsei, Msri] = scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol, WB);
+     [ZI, MSEI, NMSEI, MSRI] = scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol, WB);
     
      optimize interpolation for regular grid output by breaking into bite-sized tiles
      which are passed to scalecInterpPerturbations (which does not remove any trend)
@@ -387,8 +387,8 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
         # send to stand-alone interp
         print 'output not a 2-d grid \n'
         #from scalecInterpolation import scalecInterp
-        Zi, Msei, Nmsei, Msri = scalecInterp(x, z, s, xi, lx, filtername, nmseitol)
-        return Zi, Msei, Nmsei, Msri
+        ZI, MSEI, NMSEI, MSRI = scalecInterp(x, z, s, xi, lx, filtername, nmseitol)
+        return ZI, MSEI, NMSEI, MSRI
     # calculate ni, nj (grid cell count)
     nyi = idxi[-1] + 1
     nxi = Ni / nyi  
@@ -398,8 +398,8 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     if (nxi != tmp[0]):
         print 'indices not consistent with gridded output, continuing to interp \n'
         # send to stand-alone interp
-        Zi, Msei, Nmsei, Msri = scalecInterp(x, z, s, xi, lx, filtername, nmseitol)
-        return Zi, Msei, Nmsei, Msri
+        ZI, MSEI, NMSEI, MSRI = scalecInterp(x, z, s, xi, lx, filtername, nmseitol)
+        return ZI, MSEI, NMSEI, MSRI
     else:
         # we still think we have gridded data  -- SB potentially Backwards labeled again
         Xi = np.reshape(xi[:,0], (nxi, nyi)).T
@@ -416,8 +416,8 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
             print 'inidices not consistent with gridded output, continuing to interp \n'
             # send to stand-alone interp
             # from scalecInterpolation import scalecInterp
-            Zi, Msei, Nmsei, Msri = scalecInterp(x, z, s, xi, lx, filtername, nmseitol)
-            return Zi, Msei, Nmsei, Msri
+            ZI, MSEI, NMSEI, MSRI = scalecInterp(x, z, s, xi, lx, filtername, nmseitol)
+            return ZI, MSEI, NMSEI, MSRI
     del tmp
     # if we survived to here, we have gridded output
     # xi and yi are now row,col vectors of grid indices
@@ -528,25 +528,25 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     Lmax = 10 * np.array([max(lx[:,0]), max(lx[:,1])])
     
     # init output
-    Zi = np.nan * np.ones((nyi,nxi), float)  # init output differently 
-    Nmsei = np.ones((nyi, nxi), float)
-    Msei = np.nan * np.ones((nyi,nxi), float)
-    Msri = np.nan * np.ones((nyi,nxi), float)
-    # TODO - why does idyi start at say 20, and miss the first portion (behind the dunes??)
+    ZI = np.ma.array(np.ones((nyi,nxi), dtype=float), mask=True)     # init output differently
+    NMSEI = np.ma.array(np.ones((nyi,nxi), dtype=float), mask=True) # np.ones((nyi, nxi), float)
+    MSEI = np.ma.array(np.ones((nyi,nxi), dtype=float), mask=True)  # np.nan * np.ones((nyi,nxi), float)
+    MSRI = np.ma.array(np.ones((nyi,nxi), dtype=float), mask=True)  # np.nan * np.ones((nyi,nxi), float)
+    # TODO - why does idyi start at say 20, and miss the first portion (behind the dunes??)  where does idx go?
     # begin Interp
     Ndone = 0
     for i in xrange(0, int(kx)):  # loop through each X
         idxi = np.arange(0, int(nkx)) + i * int(nkx) # indices to interp this time
         if(i == kx-1 and  idxi[-1] != nxi):
             idxi = np.arange(idxi[0], nxi) # catch the end here
-        # what is appropriate overlap?
+        # what is appropriate overlap?  is this finding appropriate overlap or is this a question posed to the programer
         xmin = xi[0,idxi[0]] - Lmax[0] # find tile limits
         xmax = xi[0,idxi[-1]] + Lmax[0]
         idx = np.where((x[:,0] > xmin) & (x[:,0] < xmax))[0] # get the useful data
         if(len(idxi) > 0):
             # repeat at each yi
             for j in xrange(0, int(ky)):  # Loop through each Y
-                idyi = np.arange(0, int(nky)) + (j+1) * int(nky) # indices to interp this time
+                idyi = np.arange(0, int(nky)) + j * int(nky) # indices to interp this time
                 if(j == ky-1 and idyi[-1] != nyi):
                     idyi = np.arange(idyi[0], nyi) # catch the end here
                 ymin = yi[idyi[0],0] - Lmax[1]
@@ -584,10 +584,10 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
                     nmsei = np.reshape(nmsei, (len(idxi), len(idyi))).T
                     msri = np.reshape(msri, (len(idxi), len(idyi))).T
                     # now place back into larger grid
-                    Zi[idyi[0]:idyi[-1]+1, idxi[0]:idxi[-1]+1] = zi
-                    Msei[idyi[0]:idyi[-1]+1, idxi[0]:idxi[-1]+1] = msei
-                    Nmsei[idyi[0]:idyi[-1]+1, idxi[0]:idxi[-1]+1] = nmsei
-                    Msri[idyi[0]:idyi[-1]+1, idxi[0]:idxi[-1]+1] = msri
+                    ZI[idyi[0]:idyi[-1]+1, idxi[0]:idxi[-1]+1] = zi
+                    MSEI[idyi[0]:idyi[-1]+1, idxi[0]:idxi[-1]+1] = msei
+                    NMSEI[idyi[0]:idyi[-1]+1, idxi[0]:idxi[-1]+1] = nmsei
+                    MSRI[idyi[0]:idyi[-1]+1, idxi[0]:idxi[-1]+1] = msri
                     Ndone = Ndone + len(idyi) * len(idxi)
                     del tmp1, tmp2
                     #if(etime(clock,tcheck)>60)
@@ -597,25 +597,18 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     #print 'interpolated ', np.fix(nyi*nxi/(etime(tend,tstart))) ,' points per second (tiled) \n'
                     
     # return output in cols
-    Zi    = Zi.flatten(1)
-    Msei  = Msei.flatten(1)
-    Nmsei = Nmsei.flatten(1)
-    Msri  = Msri.flatten(1)
+    ZI    = ZI.flatten(1)
+    MSEI  = MSEI.flatten(1)
+    NMSEI = NMSEI.flatten(1)
+    MSRI  = MSRI.flatten(1)
     
-    # fix up error too
-    # The following probably can be done more effectively
-    idd = []
-    index = 0
-    for i in Msei:
-        if(np.isnan(i)):
-            idd.append(index)
-        index += 1
-    idd = np.array(idd)
+    # fix up error too - SB redone
+    idd = np.argwhere(MSEI.mask == True).squeeze()
     if (np.size(idd) > 0):
-        Msei[idd] = var_z + np.mean(s**2)
-        Msri[idd] = Msri[idd]
+        MSEI[idd] = var_z + np.mean(s**2)
+        MSRI[idd] = MSEI[idd]
     
-    return Zi, Msei, Nmsei, Msri 
+    return ZI, MSEI, NMSEI, MSRI
     
 def scalecInterpTile(x, z, s, xi, lx, filtername, nmseitol):
     """
