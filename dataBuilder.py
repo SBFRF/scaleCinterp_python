@@ -12,18 +12,23 @@ import pyproj
 
 """ BUILD #1: """ 
 def readInDataSet(filename):
+    """
+    This function opens a file of various types and puts data into 3 columar variables
+    :param filename:
+    :return: x, y, z (1 d array of observation data)
+    """
     dataX, dataY, dataZ = [], [], []              
     # Handle NetCDF files
     if filename.endswith('nc'):
         try:
             ncfile = nc.Dataset(filename)
-            dataX = ncfile['x'][:]
-            dataY = ncfile['y'][:]
-            dataZ = ncfile['z'][:]
-        except IndexError:  # assume FRF ncfile keys
-            dataX = ncfile['lon'][:]
-            dataY = ncfile['lat'][:]
-            dataZ = ncfile['elevation']
+            dataX = ncfile['xFRF'][:]
+            dataY = ncfile['yFRF'][:]
+            dataZ = ncfile['elevation'][:]
+        except IndexError:    # assume FRF ncfile keys
+            dataX = ncfile['longitude'][:]
+            dataY = ncfile['latitude'][:]
+            dataZ = ncfile['elevation'][:]
         except IOError:
             print '1 - cannot open', filename, 'it may not exist.  Please check path' 
     
@@ -90,10 +95,16 @@ def readInDataSet(filename):
         print 'The file extension of,', filename,', is not supported. Please try again'
         print 'Supported file extension: \n.nc\n.laz\n.las\n.txt\n.mat'
         
-    # Reshape the data... for compatibility
-    dataX = np.reshape(dataX, (len(dataX),))
-    dataY = np.reshape(dataY, (len(dataY),))
-    dataZ = np.reshape(dataZ, (len(dataZ),))
+    try:  # see if its profile data
+        # Reshape the data... for compatibility
+        dataX = np.reshape(dataX, (len(dataX),))
+        dataY = np.reshape(dataY, (len(dataY),))
+        dataZ = np.reshape(dataZ, (len(dataZ),))
+    except ValueError:  # this is gridded data
+        xx, yy = np.meshgrid(dataX, dataY)
+        dataX = np.reshape(xx, (np.size(xx),))
+        dataY = np.reshape(yy, (np.size(yy),))
+        dataZ = np.reshape(dataZ, (np.size(dataZ),))
 
     # Need to handle any NaNs?
     
@@ -168,16 +179,16 @@ def gridBuilder(x0, x1, y0, y1, dx, dy, grid_coord_check, grid_filename, EPSG=26
 
     Builds the grid nodes, using verticies location
 
-    :param x0: origin
-    :param x1:
-    :param y0:
-    :param y1:
-    :param dx:
-    :param dy:
-    :param grid_coord_check:
-    :param grid_filename:
+    :param x0: xbound of grid points
+    :param x1: xbound of grid points
+    :param y0: ybound of grid points
+    :param y1: ybound of grid points
+    :param dx: cell size in x
+    :param dy: cell size in y
+    :param grid_coord_check:  a key to interpret the x,y bounds
+    :param grid_filename: a place to grab previous grid points, netCDF file must have keys of xFRF, yFRF
     :param EPSG:
-    :return:
+    :return: an x grid and a y grid
     """
     if (grid_filename.strip() == ''):  # if there's no grid filename
         # build grid in UTM using dx dy, and 2 corners of grid(x0, y0)
@@ -187,21 +198,29 @@ def gridBuilder(x0, x1, y0, y1, dx, dy, grid_coord_check, grid_filename, EPSG=26
             x0, y0 = UTM16N(x0, y0)
             x1, y1 = UTM16N(x1, y1)
 
+
         x0 = np.round(x0, decimals=0)  # why are these rounded ?  this moves the origin of the grid?
         x1 = np.round(x1, decimals=0)
         y0 = np.round(y0, decimals=0)
         y1 = np.round(y1, decimals=0)
-
-        numGridPointsX = np.abs((x1 - x0) / dx)  # this assumes finite difference grid (points are vertex located) - sb
-        numGridPointsY = np.abs((y1 - y0) / dy)
-        x_grid, y_grid = np.meshgrid(np.linspace(x0, x1, numGridPointsX), np.linspace(y0, y1, numGridPointsY))
+        print 'Generating Grid, Rounding grid nodes to whole number'
+        numGridPointsX = np.ceil(np.abs(x1-x0)/dx)  # this assumes finite difference grid (points are vertex located) - sb
+        numGridPointsY = np.ceil(np.abs(y1-y0)/dy)
+        assert numGridPointsX > 0, 'Grid must have more than 0 nodes in X, check coordinate system'
+        assert numGridPointsY > 0, 'Grid must have more than 0 nodes in Y, check coordinate system'
+        # round out the x and y coords to get clean linspace back
+        xCoord = np.round(np.linspace(min(x0, x1), max(x0, x1), numGridPointsX), decimals=0)
+        yCoord = np.round(np.linspace(min(y0, y1), max(y0, y1), numGridPointsY), decimals=0)
+        x_grid, y_grid = np.meshgrid(xCoord, yCoord)
         # pass
     else:
         try:
-            gridFile = sio.loadmat(grid_filename)  # Currently only works with MAT file
+            gridFile = nc.Dataset(grid_filename) #sio.loadmat(grid_filename)  # Currently only works with MAT file
             print "here's where to get the NetCDF grid file locations"
-            x_grid = gridFile['xgrid']
-            y_grid = gridFile['ygrid']
+            xCoord = gridFile['xFRF']
+            yCoord = gridFile['yFRF']
+
+            x_grid, y_grid = np.meshgrid(xCoord, yCoord)
         except IOError:
             print 'The file,', grid_filename, ', does not exist in the path. Please try again.'
 
