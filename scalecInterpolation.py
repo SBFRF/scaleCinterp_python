@@ -2,6 +2,7 @@
 # Author: ?????
 import numpy as np
 from supportingMethods import consistentWeight
+from scipy import interpolate
 
 
 def scalecInterpPerturbations(x,z,s,xi,lx,filtername,nmseitol,Ntotal,Ndone):
@@ -36,6 +37,7 @@ def scalecInterpPerturbations(x,z,s,xi,lx,filtername,nmseitol,Ntotal,Ndone):
        msri, the mean square residuals
        HWAITBAR, the waitbar handle
     """
+
     # deal with input 
     N, m = np.shape(x)
     Ni, mi = np.shape(xi)
@@ -49,7 +51,11 @@ def scalecInterpPerturbations(x,z,s,xi,lx,filtername,nmseitol,Ntotal,Ndone):
     if (np.size(s) == 1):
         s = np.tile(s, (N,1))
     
-    # Deal with nans
+    assert type(x) != np.ma.array, 'scaleCinterpolation cannot handle masked items, logic needs to change'
+    assert type(z) != np.ma.array, 'scaleCinterpolation cannot handle masked items, logic needs to change'
+    assert type(s) != np.ma.array, 'scaleCinterpolation cannot handle masked items, logic needs to change'
+
+    # Deal with nans, this logic would need to change from looking from nans to looking for masked values
     tmp = np.concatenate((x,z,s), axis=1)
     idd = (np.ravel(np.isfinite(np.sum(tmp, axis=1))).nonzero())[0]
     del tmp
@@ -59,27 +65,26 @@ def scalecInterpPerturbations(x,z,s,xi,lx,filtername,nmseitol,Ntotal,Ndone):
     if (np.shape(lx) == N and np.shape(lx) != Ni):
         # got to remove the corresponding scales 
         lx = lx[idd,:]
-    
+    ## now done with that, 'we have clean data ie no nans no masked values'
     N, m = np.shape(x)
     
     # Use weighted calculations on DATA
     wtol = 0.1 # tolerance for iterative convergence of weights
     s = s**2 # need variance, not standard deviation
-    from supportingMethods import consistentWeight
+    # from supportingMethods import consistentWeight  - ALREADY imported
     wt, var_z = consistentWeight(z, s, wtol)
     # normalize weights
     wt = (wt + np.spacing(1)) / (np.spacing(1) + max(wt))
     
     # eliminate useless variables
-    tmp = np.array([])
-    for i in xrange(0,m):
-        tmp = np.append(tmp, np.std(x[:,i]))
-    std_x = tmp
-    del tmp
-    idd = np.where(std_x == 0)[0]
-    if (len(idd) > 0): # catch variables with zero variance (e.g., a profile)
-        #for i in idd:
-        std_x[idd] = 1
+    # tmp = np.array([])
+    # for i in xrange(0,m):
+        # tmp = np.append(tmp, np.std(x[:,i]))
+    std_x = np.std(x, axis=0) #tmp
+    # del tmp
+    idd = np.argwhere(std_x == 0).squeeze()
+    if idd.size > 0: # catch variables with zero variance (e.g., a profile)
+        std_x[idd] = 1 + 0*idd
     
     # get the convolution kernel at adequate resolution
     Rmax = 1
@@ -87,6 +92,7 @@ def scalecInterpPerturbations(x,z,s,xi,lx,filtername,nmseitol,Ntotal,Ndone):
     if (nmseitol == None): 
         nmseitol = np.inf # Never invoke tolerance 
         print 'scalecInterpPerturbations: Setting maximum nmse tolerance to ', nmseitol
+    ###### Set appropriate switches for interpolation based on input
     if 'quadloess' == filtername:
         # MUST DO THIS CORRECTLY FOR N-D
         from supportingMethods import loess_kernelND
@@ -98,7 +104,7 @@ def scalecInterpPerturbations(x,z,s,xi,lx,filtername,nmseitol,Ntotal,Ndone):
         Fc = 0.4 # Here is the half-power point
     elif 'hanning' == filtername:
         from supportingMethods import hanning_wt
-        ri = np.arange(0, (Rmax+Dr), Dr)
+        ri = np.arange(0, (Rmax+Dr*2), Dr)  # Dr*2 fixes missing end point when compared with matlab
         ai = hanning_wt(ri)
         Fc = 0.4
     elif 'boxcar' == filtername:
@@ -120,7 +126,13 @@ def scalecInterpPerturbations(x,z,s,xi,lx,filtername,nmseitol,Ntotal,Ndone):
     nmsei = np.ones((Ni,1), float)
     msei = np.ones((Ni,1), float)
     msri = np.ones((Ni,1), float)
-    
+
+    # Scale the data for interpolation -- this part was missing from original - added by SB 7/21/17
+    # if lx.shape[-1] == m:
+    #     # print 'using constant smoothing scales
+    #     L = np.diag(1./lx)
+    #     x = np.dot(x, L)
+    #     xi = np.dot(xi, L)
     for i in xrange(0, Ni):
         # center on point of interest
         y = x - (np.ones((N,1), float) * xi[i,:])
@@ -133,9 +145,9 @@ def scalecInterpPerturbations(x,z,s,xi,lx,filtername,nmseitol,Ntotal,Ndone):
             # scale the data
             y = y / lx
         elif (len(lx) == Ni):
-            y = np.dot(y, np.diag(1.0 / lx[i,:]))
+            y = np.dot(y, np.diag(1. / lx[i,:]))
         else:
-            print 'smoothing scales not interpreted: ', N, Ni, np.size(lx)
+            print 'smoothing scales not interpreted: N=%d, Ni=%d, Lx=%dx%d' %(N, Ni, lx.shape[0], lx.shape[1])
         
         # Convert input to radial 
         r = np.sqrt(np.sum(y**2, axis=1))
@@ -159,20 +171,20 @@ def scalecInterpPerturbations(x,z,s,xi,lx,filtername,nmseitol,Ntotal,Ndone):
                 aid = np.nonzero(r < p)[0]
                 na = len(aid)
                 a = np.zeros((na,1), float) # default to first guess (also called norm)
-                from scipy import interpolate
-                f = interpolate.interp1d(ri,ai.flatten(1))
+
+                f = interpolate.interp1d(ri,ai.flatten(1), 'linear')
                 a = f(r[aid]/p)
-               # from scipy.interpolate import interp1d
-               # interpObj = interp1d(ri, ai, kind = 'linear')
-               # a = interpObj.__call__(r[aid] / p)
+
                 # apply a priori weights
                 if (np.size(a) == 1):
                     a = a[0]
                 elif(np.size(a) == 0):
                     a = 0
                 if (np.size(aid) != 0):
-                    a = a * wt[aid[0]][0] # some wierd stuff happens with the indices... just go with it
-            
+                    # a = a * wt[aid[0]][0] # some wierd stuff happens with the indices... just go with it
+                    # SB remade this line
+                    a = a * wt[aid].squeeze()  # need to squeeze because wts are multidimensional
+
                 suma = np.sum(a)
                 if (abs(suma) > 0):
                     a = a / suma
@@ -188,25 +200,26 @@ def scalecInterpPerturbations(x,z,s,xi,lx,filtername,nmseitol,Ntotal,Ndone):
                 nmsei[i]=1
                 
         # account for deviation from target scales with fraction of wavenumber band used
-        q = p ** (- m)
+        q = p ** (-m)
         nmsei[i] = (1 - q * (1 - nmsei[i]))
         
         # convolve against data
-        a_ConjugateTranspose = np.reshape(a.conj().T, (1, len(a.conj().T)))
-        tmp = z[aid]
-        zi[i] = np.dot(a_ConjugateTranspose, z[aid])
+        # a_ConjugateTranspose = np.reshape(a.conj().T, (1, len(a.conj().T)))
+        # tmp = z[aid]
+        zi[i] = np.dot(a.conj().T, z[aid])  # a_ConjugateTranspose, z[aid])
         
         if (nmsei[i] < 1 and na > 0):
             # and weighted residuals are
-            tmp = np.reshape(a, (len(a), 1))
-            y = (z[aid] - zi[i]) * tmp
-            del tmp
-            msri[i] = np.dot(y.conj().T, y) / nmsei[i][0]
-            msri[i] = ((na - 1) * msri[i] + np.dot(a_ConjugateTranspose, s[aid])[0,0]) / na
+            # tmp = np.reshape(a, (len(a), 1))
+            y = (z[aid] - zi[i]) * np.expand_dims(a, axis=1)  # tmp removed ... fixed by expanding dims
+            # del tmp
+            msri[i] = np.dot(y.conj().T, y) / nmsei[i][0]  # weighted mean square residual
+            # which is not accurate if small dof, add estimate that converges to observation error for (na-1) -> 0
+            msri[i] = ((na - 1) * msri[i] + np.dot(a.conj().T, s[aid])) / na
             # weighted mean square residual 
             msei[i] = msri[i] * nmsei[i] / (1 - nmsei[i]) # predicted mean square error
         else:
-            # set it to one
+            # set it to one!
             nmsei[i] = 1
     
     return zi, msei, nmsei, msri
@@ -276,7 +289,7 @@ def scalecInterp(x, z, s, xi, lx, filtername, nmseitol):
     if(np.size(idd) > 0): # catch variables with zero variance (e.g., a profile)
         std_x[idd] = 1
     
-    L = np.diag(1 / std_x)
+    L = np.diag(1/ std_x)
     x = np.dot(x, L)
     xi = np.dot(xi, L)
     lx = np.dot(lx, L)
@@ -392,7 +405,7 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     # calculate ni, nj (grid cell count)
     nyi = idxi[-1] + 1
     nxi = Ni / nyi  
-    
+    # print 'nyi and nxi are backwards from super function, is this a problem i don''t know ' - doesn't seem to be SB
     # modify to handle time input for single time output on 2-d-h grid
     tmp = np.reshape(np.fix(nxi), (1)) # np.fix returns a 0-d array, so it must be reshaped to a 1-d array
     if (nxi != tmp[0]):
@@ -532,7 +545,6 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     NMSEI = np.ma.array(np.ones((nyi,nxi), dtype=float), mask=True) # np.ones((nyi, nxi), float)
     MSEI = np.ma.array(np.ones((nyi,nxi), dtype=float), mask=True)  # np.nan * np.ones((nyi,nxi), float)
     MSRI = np.ma.array(np.ones((nyi,nxi), dtype=float), mask=True)  # np.nan * np.ones((nyi,nxi), float)
-    # TODO - why does idyi start at say 20, and miss the first portion (behind the dunes??)  where does idx go?
     # begin Interp
     Ndone = 0
     for i in xrange(0, int(kx)):  # loop through each X
