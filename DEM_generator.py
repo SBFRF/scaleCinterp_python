@@ -88,15 +88,17 @@ def DEM_generator(dict):
     # ############################### Load Data ########################
     ####################################################################
     t = DT.datetime.now()
-    x, z = dataBuilder(filelist, data_coord_check)  # function loads x, y, z data and concatenates in long array
+    x, z = dataBuilder(filelist, dict['data_coord_check'])  # function loads x, y, z data and concatenates in long array
     s = np.ones((np.size(x[:,1]),1))
+    # TODO estimate measurement error
+    print 'Estimate Measurement Error '
     print 'loading time is %s seconds' % (DT.datetime.now() - t)
     assert x.shape[0] > 1, 'Data Did not Load!'
     ####################################################################
     # Call grid builder to make a grid based on x,y min and max values #
     ####################################################################
 
-    x_grid, y_grid = gridBuilder(x0, x1, y0, y1, lambdaX, lambdaY, grid_coord_check, grid_filename)
+    x_grid, y_grid = gridBuilder(x0, x1, y0, y1, lambdaX, lambdaY, dict['grid_coord_check'], grid_filename)
     t_grid = np.zeros_like((x_grid))  # Interpolate in time -- Not Developed Yet, but place holder there
     xi = np.array([x_grid.flatten(), y_grid.flatten(), t_grid.flatten()]).T  # grid locations, flatten make row-major style
     # now make smoothing array same shape as  xi
@@ -144,15 +146,15 @@ def DEM_generator(dict):
 
     # save the ouput
     # reshape
-    zi = np.reshape(zi, (N,M))  # what are these errors ???
-    msei = np.reshape(msei, (N,M))
-    nmsei = np.reshape(nmsei, (N,M))
-    msri = np.reshape(msri, (N,M))
+    zi = np.reshape(zi, (N,M))  #        # zi, the estimate
+    msei = np.reshape(msei, (N,M))       # msei, the mean square interpolation error estimate (units of z)
+    nmsei = np.reshape(nmsei, (N,M))     # nmsei, the normalized mean square error
+    msri = np.reshape(msri, (N,M))       # msri, the mean square residuals
 
-       # zi, the estimate
-       # msei, the mean square interpolation error estimate (units of z)
-       # nmsei, the normalized mean square error
-       # msri, the mean square residuals
+
+
+
+
     out = {'Zi': zi,
            'MSEi': msei,
            'NMSEi': nmsei,
