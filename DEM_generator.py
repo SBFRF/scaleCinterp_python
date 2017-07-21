@@ -91,7 +91,7 @@ def DEM_generator(dict):
     x, z = dataBuilder(filelist, dict['data_coord_check'])  # function loads x, y, z data and concatenates in long array
     s = np.ones((np.size(x[:,1]),1))
     # TODO estimate measurement error
-    print 'Estimate Measurement Error '
+    print 'TODO Estimate Measurement Error '
     print 'loading time is %s seconds' % (DT.datetime.now() - t)
     assert x.shape[0] > 1, 'Data Did not Load!'
     ####################################################################
