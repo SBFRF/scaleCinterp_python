@@ -13,6 +13,7 @@ from dataBuilder import dataBuilder, gridBuilder
 from subsampleData import subsampleData
 from scalecInterpolation import scalecInterpTilePerturbations
 import datetime as DT
+import matplotlib.pyplot as plt
 
 
 
@@ -51,6 +52,7 @@ def DEM_generator(dict):
     y0                          # Minimum y-value of the output grid
     x1                          # Maximum x-value of the output grid
     y1                          # Maximum y-value of the output grid
+    grid_filename               # full filepath of the t0 nc file, if it exists
     lambdaY                     # grid spacing in the y-direction
     lambdaX                     # Grid spacing in the x-direction
     msmoothx                    # Smoothing length scale in the x-direction
@@ -60,6 +62,9 @@ def DEM_generator(dict):
                                 #      ['hanning', 'linloess', 'quadloess', 'boxcar', si']
     nmseitol                    # Normalized error tolerance the user will tolerate in the final grid
                                 #      (0 - (no error) to 1 (no removal of bad points))
+    xFRF_s                      # survey xFRF coordinates
+    yFRF_s                      # survey yFRF coordinates
+    Z_s                         # survey bottom elevations
 
     :return: dict with keys:
         zi, the depth estimate
@@ -71,6 +76,10 @@ def DEM_generator(dict):
     y0 = dict['y0']             # Minimum y-value of the output grid
     x1 = dict['x1']             # Maximum x-value of the output grid
     y1 = dict['y1']             # Maximum y-value of the output grid
+    try:
+        grid_filename = dict['grid_filename']
+    except:
+        pass
     lambdaY = dict['lambdaY']   # grid spacing in the y-direction
     lambdaX = dict['lambdaX']   # Grid spacing in the x-direction
     msmoothx = dict['msmoothx'] # Smoothing length scale in the x-direction
@@ -80,7 +89,13 @@ def DEM_generator(dict):
                                      #      ['hanning', 'linloess', 'quadloess', 'boxcar', si']
     nmseitol = dict['nmseitol']  # Normalized error tolerance the user will tolerate in the final grid
                                                       #      (0 - (no error) to 1 (no removal of bad points))
-    filelist = dict['filelist']
+    # filelist = dict['filelist']
+
+    xFRF_s = dict['xFRF_s']
+    yFRF_s = dict['yFRF_s']
+    Z_s = dict['Z_s']
+
+
     #### data checks ###########3
     filters = ['hanning', 'linloess', 'quadloess', 'boxcar', 'si']
     assert filtername in filters, 'Check filter name, not appropriate for current DEM generator function'
@@ -88,7 +103,12 @@ def DEM_generator(dict):
     # ############################### Load Data ########################
     ####################################################################
     t = DT.datetime.now()
-    x, z = dataBuilder(filelist, dict['data_coord_check'])  # function loads x, y, z data and concatenates in long array
+
+    # I use my dictionary instead of the dataBuilder function!!!!!
+    # x, z = dataBuilder(filelist, data_coord_check='FRF')
+    x = np.array([xFRF_s, yFRF_s, np.zeros(xFRF_s.size)]).T
+    z = Z_s[:, np.newaxis]
+
     s = np.ones((np.size(x[:,1]),1))
     # TODO estimate measurement error
     print 'TODO Estimate Measurement Error '
@@ -122,7 +142,6 @@ def DEM_generator(dict):
     # a plot to compare original data to subsampled data
     from matplotlib import pyplot as plt
     plt.figure()
-    plt.suptitle('%s' %filelist[0])
     plt.subplot(211)
     plt.plot(x[:,0], x[:,1], '.', label='Raw')
     plt.plot(Xi[:,0], Xi[:,1], '.', label='SubSampled')
