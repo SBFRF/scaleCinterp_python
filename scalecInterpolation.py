@@ -76,7 +76,7 @@ def scalecInterpPerturbations(x,z,s,xi,lx,filtername,nmseitol,Ntotal,Ndone):
     # normalize weights
     wt = (wt + np.spacing(1)) / (np.spacing(1) + max(wt))
     
-    # eliminate useless variables
+    # eliminate useless variables -sb
     # tmp = np.array([])
     # for i in xrange(0,m):
         # tmp = np.append(tmp, np.std(x[:,i]))

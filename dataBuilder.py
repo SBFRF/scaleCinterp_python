@@ -19,7 +19,7 @@ def readInDataSet(filename):
     """
     dataX, dataY, dataZ = [], [], []              
     # Handle NetCDF files
-    if filename.endswith('nc'):
+    if (filename.endswith('nc')) or (filename.endswith('ncml')):
         try:
             ncfile = nc.Dataset(filename)
             dataX = ncfile['xFRF'][:]
@@ -208,15 +208,19 @@ def gridBuilder(x0, x1, y0, y1, dx, dy, grid_coord_check, grid_filename, EPSG=26
         numGridPointsY = np.ceil(np.abs(y1-y0)/dy)
         assert numGridPointsX > 0, 'Grid must have more than 0 nodes in X, check coordinate system'
         assert numGridPointsY > 0, 'Grid must have more than 0 nodes in Y, check coordinate system'
-        # round out the x and y coords to get clean linspace back
-        xCoord = np.round(np.linspace(min(x0, x1), max(x0, x1), numGridPointsX), decimals=0)
-        yCoord = np.round(np.linspace(min(y0, y1), max(y0, y1), numGridPointsY), decimals=0)
+        # round the x min and x max to the nearest 5
+        x_min = int(dx * round(float(min(x0, x1))/dx))
+        x_max = int(dx * round(float(max(x0, x1))/dx))
+        y_min = int(dy * round(float(min(y0, y1))/dy))
+        y_max = int(dy * round(float(max(y0, y1))/dy))
+        xCoord = np.arange(x_min, x_max, dx)
+        yCoord = np.arange(y_min, y_max, dy)
         x_grid, y_grid = np.meshgrid(xCoord, yCoord)
         # pass
     else:
         try:
             gridFile = nc.Dataset(grid_filename) #sio.loadmat(grid_filename)  # Currently only works with MAT file
-            print "here's where to get the NetCDF grid file locations"
+            print "here's where to get the NetCDF grid file locations %s" %(grid_filename)
             xCoord = gridFile['xFRF']
             yCoord = gridFile['yFRF']
 

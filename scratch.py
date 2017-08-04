@@ -1,8 +1,8 @@
 from sblib import geoprocess as gp
-from DEM_generator import DEM_generator
+from scalecInterp_python.DEM_generator import DEM_generator
 # Call dataBuilder to construct data in necessary format for interpolation
 # filelist = list_files(datapath, datatype)  # creates a list of files to be interpolated
-filelist = ['FRF_20160726_1121_FRF_NAVD88_LARC_GPS_UTC_v20170320_grid_latlon.nc'] #''/home/spike/repos/scalecInterp_python/FRF_20160726_1121_FRF_NAVD88_LARC_GPS_UTC_v20170320.nc',]  # files with NEW data that are in background grid
+filelist = ['http://134.164.129.55/thredds/dodsC/FRF/survey/gridded/FRF_20160726_1121_FRF_NAVD88_LARC_GPS_UTC_v20170320_grid_latlon.nc'] #''/home/spike/repos/scalecInterp_python/FRF_20160726_1121_FRF_NAVD88_LARC_GPS_UTC_v20170320.nc',]  # files with NEW data that are in background grid
 
 x0, y0 = 1600, 1600  # north east corner of grid
 x1, y1 = 0, -200     # south west corner of grid
