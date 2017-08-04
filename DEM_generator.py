@@ -95,6 +95,17 @@ def DEM_generator(dict):
     yFRF_s = dict['yFRF_s']
     Z_s = dict['Z_s']
 
+    # if these are 2D, convert them
+    if len(np.shape(xFRF_s)) == 2:
+        xFRF_s = np.reshape(xFRF_s, (1, np.shape(xFRF_s)[0]*np.shape(xFRF_s)[1]))
+        yFRF_s = np.reshape(yFRF_s, (1, np.shape(yFRF_s)[0] * np.shape(yFRF_s)[1]))
+        Z_s = np.reshape(Z_s, (1, np.shape(Z_s)[0] * np.shape(Z_s)[1]))
+        xFRF_s = xFRF_s[0]
+        yFRF_s = yFRF_s[0]
+        Z_s = Z_s[0]
+    else:
+        pass
+
 
     #### data checks ###########3
     filters = ['hanning', 'linloess', 'quadloess', 'boxcar', 'si']
