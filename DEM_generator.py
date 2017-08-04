@@ -2,46 +2,13 @@
 """
 Created on Thu Oct 16 09:33:00 2014
 
-@author: jwlong
+@author: jwlong, edited Spicer Bak 8/4/17
 """
-
 import numpy as np
-import os, time
-from scipy.io import netcdf
 from dataBuilder import dataBuilder, gridBuilder
-# from gridBuilder import gridBuilder
 from subsampleData import subsampleData
 from scalecInterpolation import scalecInterpTilePerturbations
 import datetime as DT
-
-
-
-# Define inputs (will eventually come from ScienceBase user interface)
-toolkitpath = '' # D:\\CDI_DEM\\geoprocessing'        # Path to the interpolation toolkit codes - should be local to repo
-savepath = ''  # ''D:\\CDI_DEM\\geoprocessing'        # Path to the final output directory for saving the DEM
-datapath = '' #FRF_20170227_1131_FRF_NAVD88_LARC_GPS_UTC_v20170320.nc'     # Path to the raw data files
-# datatype = 'mat'                                      # Type of data to be analyzed (file extension; e.g. 'las' for lidar tile files)
-                                                      #     ['las', 'laz', 'nc', 'txt', 'mat']
-x0 = -75.47218285                                     # Minimum x-value of the output grid (origin)
-x1 = -75.75004989                                              # Maximum x-value of the output grid
-y0 = 36.17560399                                      # Minimum y-value of the output grid (origin)
-y1 = 36.19666112                                      # Maximum y-value of the output grid
-lambdaX = 10                                        # Grid spacing in the x-direction
-lambdaY = 10                                         # Grid spacing in the y-direction
-msmoothx = 100                                        # Smoothing length scale in the x-direction
-msmoothy = 200                                        # Smoothing length scale in the y-direction
-msmootht = 1                                          # Smoothing length scale in time
-filtername = 'hanning'                                # Name of the filter type to smooth the data
-                                                      #      ['hanning', 'linloess', 'quadloess', 'boxcar', si']
-nmseitol = 0.75                                       # Normalized error tolerance the user will tolerate in the final grid
-                                                      #      (0 - (no error) to 1 (no removal of bad points))
-grid_coord_check = 'LL'                               # ['LL' or 'UTM'] - Designates if the grid supplied by the user (if one exists)
-                                                      #      is in UTM or lat-lon coordinates
-grid_filename = ' '                                   # Name of the grid file (if supplied)
-outFname = 'TestOutput.nc'
-###########################
-data_coord_check = 'LL' #, 'NCSP']                               # ['LL' or 'UTM'] - Designates if the data supplied by the user
-                                                      #      is in UTM or lat-lon coordinates
 
 
 def DEM_generator(dict):
@@ -78,7 +45,7 @@ def DEM_generator(dict):
     msmootht = dict['msmootht'] # Smoothing length scale in time
     filtername = dict['filterName']  # Name of the filter type to smooth the data
                                      #      ['hanning', 'linloess', 'quadloess', 'boxcar', si']
-    nmseitol = dict['nmseitol']  # Normalized error tolerance the user will tolerate in the final grid
+    nmseitol = dict['nmseitol']   # Normalized error tolerance the user will tolerate in the final grid
                                                       #      (0 - (no error) to 1 (no removal of bad points))
     filelist = dict['filelist']
     #### data checks ###########3
@@ -89,16 +56,15 @@ def DEM_generator(dict):
     ####################################################################
     t = DT.datetime.now()
     x, z = dataBuilder(filelist, dict['data_coord_check'])  # function loads x, y, z data and concatenates in long array
-    s = np.ones((np.size(x[:,1]),1))
-    # TODO estimate measurement error
-    print 'TODO Estimate Measurement Error '
+    s = np.ones((np.size(x[:,1]),1))  # plant's code uses 0 here
+    # TODO estimate measurement error from the crab and incorporate to scripts
     print 'loading time is %s seconds' % (DT.datetime.now() - t)
     assert x.shape[0] > 1, 'Data Did not Load!'
     ####################################################################
     # Call grid builder to make a grid based on x,y min and max values #
     ####################################################################
 
-    x_grid, y_grid = gridBuilder(x0, x1, y0, y1, lambdaX, lambdaY, dict['grid_coord_check'], grid_filename)
+    x_grid, y_grid = gridBuilder(x0, x1, y0, y1, lambdaX, lambdaY, dict['grid_coord_check'], dict['grid_filename'])
     t_grid = np.zeros_like((x_grid))  # Interpolate in time -- Not Developed Yet, but place holder there
     xi = np.array([x_grid.flatten(), y_grid.flatten(), t_grid.flatten()]).T  # grid locations, flatten make row-major style
     # now make smoothing array same shape as  xi
