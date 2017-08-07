@@ -1,9 +1,17 @@
-from sblib import geoprocess as gp
-from scalecInterp_python.DEM_generator import DEM_generator
-# Call dataBuilder to construct data in necessary format for interpolation
-# filelist = list_files(datapath, datatype)  # creates a list of files to be interpolated
-filelist = ['http://134.164.129.55/thredds/dodsC/FRF/survey/gridded/FRF_20160726_1121_FRF_NAVD88_LARC_GPS_UTC_v20170320_grid_latlon.nc'] #''/home/spike/repos/scalecInterp_python/FRF_20160726_1121_FRF_NAVD88_LARC_GPS_UTC_v20170320.nc',]  # files with NEW data that are in background grid
+from DEM_generator import DEM_generator
+import netCDF4 as nc
+"""
+This file will give an example of how to run DEM generator with given files both a grid and a transect file
+ to use either comment the other
 
+"""
+# gridded bathymetry data run through scaleC
+filelist = ['http://134.164.129.55/thredds/dodsC/FRF/survey/gridded/FRF_20160726_1121_FRF_NAVD88_LARC_GPS_UTC_v20170320_grid_latlon.nc']
+# transect bathymetry data run though scaleC
+# filelist = ['/home/spike/repos/scalecInterp_python/FRF_20160726_1121_FRF_NAVD88_LARC_GPS_UTC_v20170320.nc']  # files with NEW data that are in background grid
+
+
+ncfile = nc.Dataset(filelist[0])  # open netCDF file
 x0, y0 = 1600, 1600  # north east corner of grid
 x1, y1 = 0, -200     # south west corner of grid
 dict = {'x0': x0,    #gp.FRFcoord(x0, y0)['Lon'],  # -75.47218285,
@@ -20,7 +28,9 @@ dict = {'x0': x0,    #gp.FRFcoord(x0, y0)['Lon'],  # -75.47218285,
         'grid_coord_check': 'FRF',
         'grid_filename': '',  # should be none if creating background Grid!  becomes best guess grid
         'data_coord_check': 'FRF',
-        'filelist': filelist
+        'xFRF_s': ncfile['xFRF'][:],
+        'yFRF_s': ncfile['yFRF'][:],
+        'Z_s': ncfile['elevation'][:]
         }
 
 out = DEM_generator(dict)
