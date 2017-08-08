@@ -67,10 +67,10 @@ def DEM_generator(dict):
     Z_s = dict['Z_s']                # survey bottom elevations
 
     # if these are 2D, convert them
-    if len(np.shape(xFRF_s)) == 2:
+    if xFRF_s.ndim == 2 and yFRF_s.ndim == 2:
         xFRF_s = np.reshape(xFRF_s, (1, np.shape(xFRF_s)[0]*np.shape(xFRF_s)[1]))
         yFRF_s = np.reshape(yFRF_s, (1, np.shape(yFRF_s)[0] * np.shape(yFRF_s)[1]))
-        Z_s = np.reshape(Z_s, (1, np.shape(Z_s)[0] * np.shape(Z_s)[1]))
+        Z_s = np.reshape(Z_s, (np.shape(Z_s)[0] * np.shape(Z_s)[1]))
         xFRF_s = xFRF_s[0]
         yFRF_s = yFRF_s[0]
         Z_s = Z_s[0]
@@ -89,8 +89,7 @@ def DEM_generator(dict):
     # x, z = dataBuilder(filelist, data_coord_check='FRF')
     x = np.array([xFRF_s, yFRF_s, np.zeros(xFRF_s.size)]).T
     z = Z_s[:, np.newaxis]
-    s = np.ones((np.size(x[:,1]),1))
-    # TODO estimate measurement error from the crab and incorporate to scripts
+    s = np.ones((np.size(x[:,1]),1))     # TODO estimate measurement error from the crab and incorporate to scripts
     print 'loading time is %s seconds' % (DT.datetime.now() - t)
     assert x.shape[0] > 1, 'Data Did not Load!'
     ####################################################################
@@ -118,17 +117,17 @@ def DEM_generator(dict):
     t = DT.datetime.now()
     Xi, zprime, si = subsampleData(x, z, s, DXsmooth)
     # a plot to compare original data to subsampled data
-    from matplotlib import pyplot as plt
-    plt.figure()
-    plt.subplot(211)
-    plt.plot(x[:,0], x[:,1], '.', label='Raw')
-    plt.plot(Xi[:,0], Xi[:,1], '.', label='SubSampled')
-    plt.legend()
-    plt.subplot(212)
-    plt.plot(np.sqrt(x[:, 0]**2 + x[:, 1]**2), z, '.', label='raw')
-    plt.plot( np.sqrt(Xi[:,0]**2 + Xi[:,1]**2), zprime, '.', label='subsampled')
-    plt.legend()
-    plt.close()
+    # from matplotlib import pyplot as plt
+    # plt.figure()
+    # plt.subplot(211)
+    # plt.plot(x[:,0], x[:,1], '.', label='Raw')
+    # plt.plot(Xi[:,0], Xi[:,1], '.', label='SubSampled')
+    # plt.legend()
+    # plt.subplot(212)
+    # plt.plot(np.sqrt(x[:, 0]**2 + x[:, 1]**2), z, '.', label='raw')
+    # plt.plot( np.sqrt(Xi[:,0]**2 + Xi[:,1]**2), zprime, '.', label='subsampled')
+    # plt.legend()
+    # plt.close()
 
     # What's returned here
     print 'subsampling time is %s seconds' % (DT.datetime.now() - t)
@@ -143,10 +142,10 @@ def DEM_generator(dict):
 
     # save the ouput and reshape
     # reshape
-    zi = np.reshape(zi, (N,M))  #        # zi, the estimate
-    msei = np.reshape(msei, (N,M))       # msei, the mean square interpolation error estimate (units of z)
-    nmsei = np.reshape(nmsei, (N,M))     # nmsei, the normalized mean square error
-    msri = np.reshape(msri, (N,M))       # msri, the mean square residuals
+    zi = np.reshape(zi, (M, N)).T           # zi, the estimate
+    msei = np.reshape(msei, (M, N)).T       # msei, the mean square interpolation error estimate (units of z)
+    nmsei = np.reshape(nmsei, (M, N)).T     # nmsei, the normalized mean square error
+    msri = np.reshape(msri, (M, N)).T       # msri, the mean square residuals
 
     # package to dictionary
     out = {'Zi': zi,

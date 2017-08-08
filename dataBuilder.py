@@ -213,13 +213,13 @@ def gridBuilder(x0, x1, y0, y1, dx, dy, grid_coord_check, grid_filename, EPSG=26
         x_max = int(dx * round(float(max(x0, x1))/dx))
         y_min = int(dy * round(float(min(y0, y1))/dy))
         y_max = int(dy * round(float(max(y0, y1))/dy))
-        xCoord = np.arange(x_min, x_max, dx)
-        yCoord = np.arange(y_min, y_max, dy)
+        xCoord = np.arange(x_min, x_max+dx, dx)
+        yCoord = np.arange(y_min, y_max+dx, dy)
         x_grid, y_grid = np.meshgrid(xCoord, yCoord)
         # pass
     else:
         try:
-            gridFile = nc.Dataset(grid_filename) #sio.loadmat(grid_filename)  # Currently only works with MAT file
+            gridFile = nc.Dataset(grid_filename)   # load netCDF file with grid node locations
             print "here's where to get the NetCDF grid file locations %s" %(grid_filename)
             xCoord = gridFile['xFRF']
             yCoord = gridFile['yFRF']

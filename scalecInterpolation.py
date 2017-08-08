@@ -403,8 +403,8 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
         ZI, MSEI, NMSEI, MSRI = scalecInterp(x, z, s, xi, lx, filtername, nmseitol)
         return ZI, MSEI, NMSEI, MSRI
     # calculate ni, nj (grid cell count)
-    nyi = idxi[-1] + 1
-    nxi = Ni / nyi  
+    nyi =  idyi.shape[0]  # idxi[-1] + 1  - SBchanged (these were backwards, because of the way python flattens is different than that of matlab
+    nxi =  idxi.shape[0]  # Ni / nyi
     # print 'nyi and nxi are backwards from super function, is this a problem i don''t know ' - doesn't seem to be SB
     # modify to handle time input for single time output on 2-d-h grid
     tmp = np.reshape(np.fix(nxi), (1)) # np.fix returns a 0-d array, so it must be reshaped to a 1-d array
@@ -415,14 +415,14 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
         return ZI, MSEI, NMSEI, MSRI
     else:
         # we still think we have gridded data  -- SB potentially Backwards labeled again
-        Xi = np.reshape(xi[:,0], (nxi, nyi)).T
-        Yi = np.reshape(xi[:,1], (nxi,nyi)).T
-        # and we are requesting single time
+        Xi = np.reshape(xi[:,0], (nyi, nxi)) # changed shape from (nxi, nyi).T to (nyi, nxi)  - SB 8/7/17
+        Yi = np.reshape(xi[:,1], (nyi, nxi)) # changed shape from (nxi, nyi).T to (nyi, nxi)
+        #  and we are requesting single time
     
         if (mi == 3 and all(xi[:,2] == xi[0,2])):
             Ti = xi[0,2]
-        xitest = Xi[0,:] 
-        yitest = Yi[:,0]  
+        xitest = Xi[0, :]
+        yitest = Yi[:, 0]
         Xitest, Yitest = np.meshgrid(xitest, yitest)
         # check carefully and pass to scalecInterp if fail
         if (not np.all(Xi == Xitest) and np.all(Yi == Yitest)):
@@ -453,7 +453,7 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
             print 'smoothing scales vary with data'
             lx = lx[idd]
     N, m = np.shape(x)
-    
+
     # need to remove trend once,
     # first, shift and scale grid and data
     # shift, center on output center
@@ -468,9 +468,7 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     
     # scale
     std_x = np.std(x, axis=0)
-    idd = np.argwhere(std_x == 0).squeeze() # = np.nonzero(std_x == 0)  - original code
-    if(np.size(idd) > 0): # catch variables with zero variance (e.g., a profile)
-        std_x[idd] = 1 + 0 * idd  #
+    std_x[np.argwhere(std_x == 0).squeeze()] = 1    # catch variables with zero variance (e.g., a profile)
     L = np.diag(1 / std_x) 
     x = np.dot(x, L)  # matrix math
     xi = xi * L[0,0]
@@ -555,7 +553,7 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
         xmin = xi[0,idxi[0]] - Lmax[0] # find tile limits
         xmax = xi[0,idxi[-1]] + Lmax[0]
         idx = np.where((x[:,0] > xmin) & (x[:,0] < xmax))[0] # get the useful data
-        if(len(idxi) > 0):
+        if(len(idxi) > 0):  # if there are indicies to work with in X
             # repeat at each yi
             for j in xrange(0, int(ky)):  # Loop through each Y
                 idyi = np.arange(0, int(nky)) + j * int(nky) # indices to interp this time
