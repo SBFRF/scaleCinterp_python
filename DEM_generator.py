@@ -72,7 +72,7 @@ def DEM_generator(dict):
     #### data checks ###########3
     filters = ['hanning', 'linloess', 'quadloess', 'boxcar', 'si']
     assert filtername in filters, 'Check filter name, not appropriate for current DEM generator function'
-    assert xFRF_s.shape == Z_s.shape and yFRF_s.shape == Z_s.shape, 'DEM GENERATOR input data must be all the same shape, 1D linear'
+    assert xFRF_s.shape == Z_s.shape and yFRF_s.shape == Z_s.shape, 'DEM GENERATOR data input data must be all the same shape, 1D linear'
 
     ####################################################################
     # ############################### Load Data ########################
