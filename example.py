@@ -7,9 +7,9 @@ This file will give an example of how to run DEM generator with given files both
  to use either comment the other
 """
 # gridded bathymetry data run through scaleC
-# filelist = ['http://134.164.129.55/thredds/dodsC/FRF/survey/gridded/FRF_20160726_1121_FRF_NAVD88_LARC_GPS_UTC_v20170320_grid_latlon.nc']
+filelist = ['http://134.164.129.55/thredds/dodsC/FRF/survey/gridded/FRF_20160726_1121_FRF_NAVD88_LARC_GPS_UTC_v20170320_grid_latlon.nc']
 # transect bathymetry data run though scaleC
-filelist = ['/home/spike/repos/scalecInterp_python/FRF_20160726_1121_FRF_NAVD88_LARC_GPS_UTC_v20170320.nc']  # files with NEW data that are in background grid
+# filelist = ['/home/spike/repos/scalecInterp_python/FRF_20160726_1121_FRF_NAVD88_LARC_GPS_UTC_v20170320.nc']  # files with NEW data that are in background grid
 
 
 ncfile = nc.Dataset(filelist[0])  # open netCDF file -bathy = nc.Dataset(filelist[0])

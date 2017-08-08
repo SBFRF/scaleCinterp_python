@@ -66,21 +66,14 @@ def DEM_generator(dict):
     yFRF_s = dict['yFRF_s']          # survey yFRF coordinates
     Z_s = dict['Z_s']                # survey bottom elevations
 
-    # if these are 2D, convert them
-    if xFRF_s.ndim == 2 and yFRF_s.ndim == 2:
-        xFRF_s = np.reshape(xFRF_s, (1, np.shape(xFRF_s)[0]*np.shape(xFRF_s)[1]))
-        yFRF_s = np.reshape(yFRF_s, (1, np.shape(yFRF_s)[0] * np.shape(yFRF_s)[1]))
-        Z_s = np.reshape(Z_s, (np.shape(Z_s)[0] * np.shape(Z_s)[1]))
-        xFRF_s = xFRF_s[0]
-        yFRF_s = yFRF_s[0]
-        Z_s = Z_s[0]
-    else:
-        pass
+
 
 
     #### data checks ###########3
     filters = ['hanning', 'linloess', 'quadloess', 'boxcar', 'si']
     assert filtername in filters, 'Check filter name, not appropriate for current DEM generator function'
+    assert xFRF_s.shape == Z_s.shape and yFRF_s.shape == Z_s.shape, 'DEM GENERATOR input data must be all the same shape, 1D linear'
+
     ####################################################################
     # ############################### Load Data ########################
     ####################################################################
