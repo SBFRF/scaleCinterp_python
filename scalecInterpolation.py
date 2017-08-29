@@ -533,7 +533,7 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
         if(nky < 1):
             nky = 1
             ky = nyi
-    print 'number of tiles = ', kopt ,', expected efficiency = ', ropt ,', xi/tile = ', nkx ,', yi/tile = ', nky ,' \n'
+    print 'number of tiles = ', kopt ,', expected efficiency = %.4f' %ropt ,', xi/tile = ', nkx ,', yi/tile = ', nky ,' \n'
     
     # specify overlap
     Lmax = 10 * np.array([max(lx[:,0]), max(lx[:,1])])
