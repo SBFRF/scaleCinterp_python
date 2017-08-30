@@ -127,12 +127,7 @@ def scalecInterpPerturbations(x,z,s,xi,lx,filtername,nmseitol,Ntotal,Ndone):
     msei = np.ones((Ni,1), float)
     msri = np.ones((Ni,1), float)
 
-    # Scale the data for interpolation -- this part was missing from original - added by SB 7/21/17
-    # if lx.shape[-1] == m:
-    #     # print 'using constant smoothing scales
-    #     L = np.diag(1./lx)
-    #     x = np.dot(x, L)
-    #     xi = np.dot(xi, L)
+
     for i in xrange(0, Ni):
         # center on point of interest
         y = x - (np.ones((N,1), float) * xi[i,:])
