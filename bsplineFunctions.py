@@ -2,15 +2,17 @@ import numpy as np
 from matplotlib import pyplot as plt
 import os
 from scipy import interpolate, signal
+
+
 # this is a Python conversion of Meg Palmsten's (NRL) splining functions used in her interpD3DFRFBackground.m script
 # DLY 7/18/2017
 
 
 def bspline_pertgrid(Zi, w, splinebctype=0, lc=4, dxm=2, dxi=1):
     """
-    :param Zi: the gridded perturbation data (Nx1 or NxM) 
+    :param Zi: the gridded perturbation data (Nx1 or NxM)
     :param w: weights for Zi (same shape)
-    :param splinebctype: 
+    :param splinebctype:
             2 - second derivative goes to zero at boundary
             1 - first derivative goes to zero at boundary
             0 - value is zero at boundary
@@ -18,8 +20,8 @@ def bspline_pertgrid(Zi, w, splinebctype=0, lc=4, dxm=2, dxi=1):
     :param lc: smoothing constraint value (usually 4)
     :param dxm: coarsening of the grid (e.g., 2 means calculate with a dx that is 2x input dx)
     :param dxi: fining of the grid (e.g., 0.1 means return spline on a grid that is 10x input dx)
-    
-    :return: Zi - splined version of Zi 
+
+    :return: Zi - splined version of Zi
     """
 
     sz = np.shape(Zi)
@@ -46,20 +48,18 @@ def bspline_pertgrid(Zi, w, splinebctype=0, lc=4, dxm=2, dxi=1):
     id = np.where(np.isnan(w))
     w[id] = 0
 
-
     # specify bc condition
     fix_ends = [0]
-    if ((Ny > 1) & (Nx >1) & (type(splinebctype) == int)):
+    if ((Ny > 1) & (Nx > 1) & (type(splinebctype) == int)):
         splinebctype = [splinebctype, splinebctype]
         fix_ends = [0, 0]
     else:
         splinebctype = [splinebctype]
 
-
     # do I need to fix dxm???!?!?!?!
-    if ((Ny > 1) & (Nx >1) & (type(dxm) == int)):
+    if ((Ny > 1) & (Nx > 1) & (type(dxm) == int)):
         dxm = [dxm, dxm]
-    elif ((Ny > 1) & (Nx >1) & (type(dxm) == float)):
+    elif ((Ny > 1) & (Nx > 1) & (type(dxm) == float)):
         dxm = [dxm, dxm]
     elif isinstance(dxm, list):
         pass
@@ -67,7 +67,7 @@ def bspline_pertgrid(Zi, w, splinebctype=0, lc=4, dxm=2, dxi=1):
         dxm = [dxm]
 
     # do I need to fix dxi???!?!?!?!
-    if ((Ny > 1) & (Nx >1) & (type(dxi) == int)):
+    if ((Ny > 1) & (Nx > 1) & (type(dxi) == int)):
         dxi = [dxi, dxi]
     elif ((Ny > 1) & (Nx > 1) & (type(dxm) == float)):
         dxi = [dxi, dxi]
@@ -75,7 +75,6 @@ def bspline_pertgrid(Zi, w, splinebctype=0, lc=4, dxm=2, dxi=1):
         pass
     else:
         dxi = [dxi]
-
 
     # check to see if we are "pinning" bc
     for ii in range(0, len(fix_ends)):
@@ -85,21 +84,19 @@ def bspline_pertgrid(Zi, w, splinebctype=0, lc=4, dxm=2, dxi=1):
         else:
             pass
 
-
     # input grid
     dx = 1
-    x = np.arange(1, Nx+dx, dx)
+    x = np.arange(1, Nx + dx, dx)
 
     # output grid
-    xi = np.arange(1, Nx+dxi[0], dxi[0])
+    xi = np.arange(1, Nx + dxi[0], dxi[0])
     Nxi = len(xi)
 
     # put xm on boundary
-    nxm = np.fix((x[-1] - x[0])/float(dxm[0]))
-    dxm[0] = (x[-1] - x[0])/float(nxm)
-    xm = x[0]+dxm[0]*np.arange(0, nxm+dx, dx)
+    nxm = np.fix((x[-1] - x[0]) / float(dxm[0]))
+    dxm[0] = (x[-1] - x[0]) / float(nxm)
+    xm = x[0] + dxm[0] * np.arange(0, nxm + dx, dx)
     xm = np.transpose(xm)
-
 
     # can proceed in 1D or 2D
     if ((Ny > 1) & (Nx > 1)):
@@ -149,22 +146,21 @@ def bspline_pertgrid(Zi, w, splinebctype=0, lc=4, dxm=2, dxi=1):
             Cm[:, ii] = np.divide(aci, max(aci))
 
         if fix_ends[1]:
-            Am[0, :] = -0.5*Am[1, :]
-            Am[-1, :] = -0.5*Am[-2, :]
+            Am[0, :] = -0.5 * Am[1, :]
+            Am[-1, :] = -0.5 * Am[-2, :]
             Cm[0, :] = 0
             Cm[-1, :] = 0
         else:
             pass
 
-        Zi = Am  #spline the Ams
+        Zi = Am  # spline the Ams
         # update weights
         minw = np.min(w)
         w = minw + 1 - np.divide(Cm, 1 + Cm)
-        w[np.isnan(w)] = 1/float(len(w))
+        w[np.isnan(w)] = 1 / float(len(w))
         yprime = y
         y = ym
         Ny = len(ym)
-
 
     # now run the spline along the x-direction
     Zprime = np.zeros((Ny, Nxi))
@@ -176,12 +172,13 @@ def bspline_pertgrid(Zi, w, splinebctype=0, lc=4, dxm=2, dxi=1):
         id = np.where(((~np.isnan(Zi[ii, :])) & (w[ii, :] > fac)))
         ztmp = ztmp0
         ztmp[id] = Zi[ii, id]
-        temp = bspline_compute(np.transpose(x), np.transpose(ztmp), np.transpose(w[ii, :]), xm, dxm, lc, splinebctype[0])
+        temp = bspline_compute(np.transpose(x), np.transpose(ztmp), np.transpose(w[ii, :]), xm, dxm, lc,
+                               splinebctype[0])
         # check to see if we are also forcing boundary
         am = temp['am']
         if fix_ends[0]:
-            am[0] = -0.5*am[1]
-            am[-1] = -.05*am[-2]
+            am[0] = -0.5 * am[1]
+            am[-1] = -.05 * am[-2]
         else:
             pass
 
@@ -205,8 +202,8 @@ def bspline_pertgrid(Zi, w, splinebctype=0, lc=4, dxm=2, dxi=1):
         else:
             pass
         if test_c:
-            Ziprime[0, :] = -0.5*Ziprime[1, :]
-            Ziprime[-1, :] = -.05*Ziprime[-2, :]
+            Ziprime[0, :] = -0.5 * Ziprime[1, :]
+            Ziprime[-1, :] = -.05 * Ziprime[-2, :]
 
         Zi = np.zeros((Nyi, Nxi))
         for ii in range(0, Nxi):
@@ -214,14 +211,13 @@ def bspline_pertgrid(Zi, w, splinebctype=0, lc=4, dxm=2, dxi=1):
             zm = temp['z']
             Zi[:, ii] = zm
 
-
     return Zi
 
 
 def bspline_compute(x, z, w, xm, dxm, lc, bctype):
     # this fits 1D data to a spline, like a boss....
     """
-    
+
     :param x: the N x 1 data locations
     :param z: the N x 1 observations
     :param w: the N x 1 observations weights (i.e., rms(true)/ (rms(error) + rms(true)))
@@ -248,12 +244,12 @@ def bspline_compute(x, z, w, xm, dxm, lc, bctype):
     # input grid N
     N = len(x)
 
-    #output grid N
+    # output grid N
     M = len(xm)
 
     # normalize inputs
-    x = x/float(dxm[0])
-    xm = xm/float(dxm[0])
+    x = x / float(dxm[0])
+    xm = xm / float(dxm[0])
     z = np.multiply(w, z)
 
     # bc coef
@@ -271,13 +267,13 @@ def bspline_compute(x, z, w, xm, dxm, lc, bctype):
         pass
 
     # initial boundary (-1)
-    fb1 = bspline_basis(x-(xm[0]-1))
+    fb1 = bspline_basis(x - (xm[0] - 1))
     # end boundary (M)
     fbM = bspline_basis(x - (xm[-1] + 1))
 
-    #compute matrix coefficients
-    b = np.zeros(M) # data correlation
-    p = np.zeros((M, M)) # model-model correlation at data
+    # compute matrix coefficients
+    b = np.zeros(M)  # data correlation
+    p = np.zeros((M, M))  # model-model correlation at data
     g1 = 0
     g2 = 0
     g3 = 0
@@ -288,7 +284,7 @@ def bspline_compute(x, z, w, xm, dxm, lc, bctype):
         if (m < 2):
             # initial boundary
             fb = fb1
-        elif (m >= (M-4)):
+        elif (m >= (M - 4)):
             fb = fbM
         else:
             fb = 0
@@ -299,36 +295,36 @@ def bspline_compute(x, z, w, xm, dxm, lc, bctype):
             f = g1
         else:
             # generate function
-            f = bspline_basis((x - xm[m]) + bc[m]*fb)
+            f = bspline_basis((x - xm[m]) + bc[m] * fb)
 
-        b[m] = np.dot(np.transpose(f), z) # spline-data covariance
-        p[m, m] = np.dot(np.transpose(f), np.multiply(w, f)) # spline - spline covariance, diagonal term
+        b[m] = np.dot(np.transpose(f), z)  # spline-data covariance
+        p[m, m] = np.dot(np.transpose(f), np.multiply(w, f))  # spline - spline covariance, diagonal term
 
         # do first off-diagonal terms
-        if (m < M-1):
+        if (m < M - 1):
             mm = m + 1
-            if ((m > 0) & (m < (M-3))):
+            if ((m > 0) & (m < (M - 3))):
                 g1 = g2
             else:
                 # include boundary influence here
-                g1 = bspline_basis((x - xm[mm]) + bc[mm]*fb)
-            p[m, mm] = np.dot(np.transpose(f), np.multiply(w, g1)) # spline - spline covariance, diagonal term
+                g1 = bspline_basis((x - xm[mm]) + bc[mm] * fb)
+            p[m, mm] = np.dot(np.transpose(f), np.multiply(w, g1))  # spline - spline covariance, diagonal term
             p[mm, m] = p[m, mm]
 
         # do second off diagonal terms
-        if (m < (M-2)):
+        if (m < (M - 2)):
             mm = mm + 1
-            if ((m > 0) & (m < (M-3))):
+            if ((m > 0) & (m < (M - 3))):
                 g2 = g3
             else:
-                g2 = bspline_basis((x - xm[mm]) + bc[mm]*fb)
+                g2 = bspline_basis((x - xm[mm]) + bc[mm] * fb)
             p[m, mm] = np.dot(np.transpose(f), np.multiply(w, g2))  # spline - spline covariance, diagonal term
             p[mm, m] = p[m, mm]
 
         # do third off diagonal terms
-        if (m < (M-3)):
+        if (m < (M - 3)):
             mm = mm + 1
-            g3 = bspline_basis((x - xm[mm]) + bc[mm]*fb)
+            g3 = bspline_basis((x - xm[mm]) + bc[mm] * fb)
             p[m, mm] = np.dot(np.transpose(f), np.multiply(w, g3))  # spline - spline covariance, diagonal term
             p[mm, m] = p[m, mm]
         else:
@@ -336,49 +332,50 @@ def bspline_compute(x, z, w, xm, dxm, lc, bctype):
 
     # q is the second derivative of the covariance matrix
     # it does not depend on the data
-    q = (-27/float(8))*np.diag(np.ones(M-1), 1) + (-27/float(8))*np.diag(np.ones(M-1), -1) + (6)*np.diag(np.ones(M)) + (3/float(8))*np.diag(np.ones(M-3), 3) + (3/float(8))*np.diag(np.ones(M-3), -3)
+    q = (-27 / float(8)) * np.diag(np.ones(M - 1), 1) + (-27 / float(8)) * np.diag(np.ones(M - 1), -1) + (6) * np.diag(
+        np.ones(M)) + (3 / float(8)) * np.diag(np.ones(M - 3), 3) + (3 / float(8)) * np.diag(np.ones(M - 3), -3)
 
     # implement the appropriate boundary conditions
-    q[0, 0] = (3/float(4))*np.square(bc[0]) - (9/float(4))*bc[0] + 3
+    q[0, 0] = (3 / float(4)) * np.square(bc[0]) - (9 / float(4)) * bc[0] + 3
     q[-1, -1] = q[0, 0]  # take advantage of symmetry???
 
-    q[0, 1] = (-9/float(4)) + (3/float(4))*bc[0]*bc[1] - (-9/float(8))*bc[1]
+    q[0, 1] = (-9 / float(4)) + (3 / float(4)) * bc[0] * bc[1] - (-9 / float(8)) * bc[1]
     q[1, 0] = q[0, 1]
     q[-1, -2] = q[0, 1]
     q[-2, -1] = q[0, 1]
 
-    q[0, 2] = (3/float(8))*bc[0]
+    q[0, 2] = (3 / float(8)) * bc[0]
     q[2, 0] = q[0, 2]
     q[-1, -3] = q[0, 2]
     q[-3, -1] = q[0, 2]
 
-    q[1, 1] = (3/float(4))*np.square(bc[1]) + (21/float(4))
+    q[1, 1] = (3 / float(4)) * np.square(bc[1]) + (21 / float(4))
     q[-2, -2] = q[1, 1]
 
-    q[1, 2] = (-27/float(8)) + (3/float(8))*bc[1]
+    q[1, 2] = (-27 / float(8)) + (3 / float(8)) * bc[1]
     q[2, 1] = q[1, 2]
     q[-2, -3] = q[1, 2]
     q[-3, -2] = q[1, 2]
 
     # compute the curvature penalty from lc
-    alpha = np.power((lc/float(2*np.pi)), 4)
+    alpha = np.power((lc / float(2 * np.pi)), 4)
 
     # this normalization allows q to kick in when sumw is small, else q is not needed
     if len(w) == 1:
-        sumw = N*w + 1
+        sumw = N * w + 1
     else:
         sumw = sum(w) + 1
 
     # add curvature terms
     # this form enforces constant scaling of freq cutoff at about 0.25/lc
-    r = np.divide(p, sumw) + alpha*(q/float(M))
+    r = np.divide(p, sumw) + alpha * (q / float(M))
     b = np.divide(b, sumw)
 
     # check matrix conditioning
     # if no good we can try for a direct solution, but no error estimate
-    mrc = 1/float(np.linalg.cond(r))
+    mrc = 1 / float(np.linalg.cond(r))
     fac = np.finfo(float).eps
-    if mrc > 100*fac:
+    if mrc > 100 * fac:
         # this might be why her solution is super sensitive to perturbations?
         # her threshold for going ahead with the inversion is way way low.
         # According to the matlab documetation, this number should be close to one!
@@ -406,7 +403,6 @@ def bspline_compute(x, z, w, xm, dxm, lc, bctype):
 
 
 def bspline_basis(y):
-
     """
     :param y: the N x 1 independent variable locations
                 y is normalized by dy (grid node spacing) and centered on xm (node of interest)
@@ -435,9 +431,8 @@ def bspline_basis(y):
 
 
 def bspline_curve(y, ym, am, dx, bctype, aci=None):
-
     """
-    
+
     :param y: the N x 1 locations of interest
     :param ym:  the M x 1 EQUALLY SPACED!!! locations of the basis function
     :param am:  the corresponding basis function amplitudes
@@ -447,7 +442,7 @@ def bspline_curve(y, ym, am, dx, bctype, aci=None):
                 1 - first derivative vanishes at boundary
                 0 - value is specified at the boundary
     :param aci: something to do with the errors, if you aren't interested in the errors this doesn't matter
-    
+
     :return: dictionary containing
             z - the N x 1 spline values at each yi
             e - the N x 1 error values at each yi
@@ -504,24 +499,24 @@ def bspline_curve(y, ym, am, dx, bctype, aci=None):
 
             if tcon:
                 # need to include bc[0]
-                abc = am[0]*bc[0] + am[1]*bc[1]
+                abc = am[0] * bc[0] + am[1] * bc[1]
                 f1 = bspline_basis(y[ii] - ym[0] + 1)
-                z[ii] = z[ii] + abc*f1
-                e[ii] = e[ii] + np.square(aci[0]*bc[0]) + np.square(f1)*np.square(aci[1]*bc[1])
+                z[ii] = z[ii] + abc * f1
+                e[ii] = e[ii] + np.square(aci[0] * bc[0]) + np.square(f1) * np.square(aci[1] * bc[1])
             else:
                 pass
 
             if np.size(id) > 1:
-                tcon = (id > (M-3)).any()
+                tcon = (id > (M - 3)).any()
             else:
-                tcon = id > (M-3)
+                tcon = id > (M - 3)
 
             if tcon:
                 # need to include bc[-1]
                 abc = am[-1] * bc[-1] + am[-2] * bc[-2]
                 f2 = bspline_basis(y[ii] - ym[-1] + 1)
-                z[ii] = z[ii] + abc*f2
-                e[ii] = e[ii] + np.square(aci[-2] * bc[-2]) + np.square(f1)*np.square(aci[-1] * bc[-1])
+                z[ii] = z[ii] + abc * f2
+                e[ii] = e[ii] + np.square(aci[-2] * bc[-2]) + np.square(f1) * np.square(aci[-1] * bc[-1])
             else:
                 pass
 
@@ -579,7 +574,7 @@ def DLY_bspline(Zi, splinebctype=10, off=None, lc=None):
         assert off_x is not None, 'DLY_bspline error: input for edge spline offset not recognized'
 
         # make sure off is not too large!!!!!
-        assert off_y < 0.5*rows, 'DLY_bspline error: edge spline y-offset may not exceed half of the number of rows in Zi'
+        assert off_y < 0.5 * rows, 'DLY_bspline error: edge spline y-offset may not exceed half of the number of rows in Zi'
         assert off_x < 0.5 * cols, 'DLY_bspline error: edge spline x-offset may not exceed half of the number of columns in Zi'
 
         # do columns
@@ -598,14 +593,13 @@ def DLY_bspline(Zi, splinebctype=10, off=None, lc=None):
 
         # do rows
         for jj in range(0, rows):
-
             # left side
-            Z_L = Zi[jj, 0:off_x+1].copy()
+            Z_L = Zi[jj, 0:off_x + 1].copy()
             Z_Ln = edge_spline(Z_L, splinebctype)
             Zi[jj, 0:off_x + 1] = Z_Ln.copy()
 
             # right side
-            Z_R = Zi[jj, -1*(off_x+1):].copy()
+            Z_R = Zi[jj, -1 * (off_x + 1):].copy()
             Z_Ri = np.flip(Z_R, 0)
             Z_Rin = edge_spline(Z_Ri, splinebctype)
             Z_Rn = np.flip(Z_Rin, 0)
@@ -615,7 +609,6 @@ def DLY_bspline(Zi, splinebctype=10, off=None, lc=None):
         Zn = Zi.copy()
     else:
         Zn = signal.cspline2d(Zi, lc)
-
 
     """
     # just spline this and see what I get?
@@ -682,14 +675,14 @@ def edge_spline(Z, splinebctype):
     assert type is not None, 'edge_spline error: this splinebctype is not supported!'
 
     if type == 'linear':
-        m = Zoff*(1/float(x[-1]))
+        m = Zoff * (1 / float(x[-1]))
         b = Z0
-        Zn = m*x + b
+        Zn = m * x + b
     elif type == 'cubic':
-        a = 2*(Z0 - Zoff)*(1/float(np.power(x[-1], 3)))
+        a = 2 * (Z0 - Zoff) * (1 / float(np.power(x[-1], 3)))
         c = 0
         d = Z0
-        b = -3*a*x[-1]*0.5
+        b = -3 * a * x[-1] * 0.5
         Zn = a * np.power(x, 3) + b * np.power(x, 2) + c * np.power(x, 1) + d
     else:
         pass
