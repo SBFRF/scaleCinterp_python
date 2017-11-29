@@ -82,7 +82,11 @@ def DEM_generator(dict):
     # x, z = dataBuilder(filelist, data_coord_check='FRF')
     x = np.array([xFRF_s, yFRF_s, np.zeros(xFRF_s.size)]).T
     z = Z_s[:, np.newaxis]
-    s = np.ones((np.size(x[:,1]),1))     # TODO estimate measurement error from the crab and incorporate to scripts
+
+    # why did Spicer set these all to 1?  Meg assumes a default of 0?
+    # s = np.ones((np.size(x[:,1]),1))     # TODO estimate measurement error from the crab and incorporate to scripts
+    s = np.zeros((np.size(x[:,1]),1))
+
     print 'loading time is %s seconds' % (DT.datetime.now() - t)
     assert x.shape[0] > 1, 'Data Did not Load!'
     ####################################################################

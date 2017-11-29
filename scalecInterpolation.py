@@ -128,11 +128,15 @@ def scalecInterpPerturbations(x,z,s,xi,lx,filtername,nmseitol,Ntotal,Ndone):
     msri = np.ones((Ni,1), float)
 
     # Scale the data for interpolation -- this part was missing from original - added by SB 7/21/17
-    # if lx.shape[-1] == m:
-    #     # print 'using constant smoothing scales
-    #     L = np.diag(1./lx)
-    #     x = np.dot(x, L)
-    #     xi = np.dot(xi, L)
+    # why was this commented out - Meg does it in her script?
+    """
+    if lx.shape[-1] == m:
+         print 'using constant smoothing scales'
+         L = np.diag(1./lx)
+         x = np.dot(x, L)
+         xi = np.dot(xi, L)
+    """
+
     for i in xrange(0, Ni):
         # center on point of interest
         y = x - (np.ones((N,1), float) * xi[i,:])
@@ -540,7 +544,10 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     
     # init output
     ZI = np.ma.array(np.ones((nyi,nxi), dtype=float), mask=True)     # init output differently
+
     NMSEI = np.ma.array(np.ones((nyi,nxi), dtype=float), mask=True) # np.ones((nyi, nxi), float)
+    #  this one is NOT MASKED in Meg's code!!!!!
+
     MSEI = np.ma.array(np.ones((nyi,nxi), dtype=float), mask=True)  # np.nan * np.ones((nyi,nxi), float)
     MSRI = np.ma.array(np.ones((nyi,nxi), dtype=float), mask=True)  # np.nan * np.ones((nyi,nxi), float)
     # begin Interp
@@ -563,10 +570,16 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
                 ymax = yi[idyi[-1],0] + Lmax[1]
                 idxy = idx[np.where((x[idx,1] < ymax) & (x[idx,1] > ymin))[0]]
                 if(np.size(idxy) > mi):
+
                     # send to interpolator
                     tmp1, tmp2 = np.meshgrid(idyi, idxi)
                     Xii = Xi[tmp1,tmp2].T
                     Yii = Yi[tmp1,tmp2].T
+
+                    # Xii2 = Xi[idyi[0]:idyi[-1]+1, idxi[0]:idxi[-1]+1]
+                    # Yii2 = Yi[idyi[0]:idyi[-1]+1, idxi[0]:idxi[-1]+1]
+                    # These are equivalent, so that was not the issue...
+
                     # deal with smoothing scales
                     if (lxflag == 'constant'):
                         L = lx
