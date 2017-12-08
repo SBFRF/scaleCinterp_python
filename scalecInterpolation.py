@@ -348,7 +348,6 @@ def scalecInterp(x, z, s, xi, lx, filtername, nmseitol):
 
     return zi, msei, nmsei, msri
 
-
 def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     """
      [ZI, MSEI, NMSEI, MSRI] = scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol, WB);
@@ -383,6 +382,12 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
      change log
      12 Feb 2009, NGP,  disabled the figure display so large regions don't croak
     """
+
+    if np.shape(lx) == np.shape(xi):
+        lx_tog = 1
+    else:
+        lx_tog = 0
+
 
     # check dimensions
     Ni, mi = np.shape(xi)
@@ -518,8 +523,12 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
 
     # get optimal tile
     # first compute smoothness/domain size ratio
-    lk = np.max(
-        np.array([np.min(lx[:, 0]), np.min(lx[:, 1])]) / np.array([np.max(xi) - np.min(xi), np.max(yi) - np.min(yi)]))
+    if lx_tog:
+        lk = np.max(
+            np.array([np.min(lx[:, 0]), np.min(lx[:, 1])]) / np.array([np.max(xi) - np.min(xi), np.max(yi) - np.min(yi)]))
+    else:
+        lk = np.max(np.array([np.min(lx[0]), np.min(lx[1])]) / np.array([np.max(xi) - np.min(xi), np.max(yi) - np.min(yi)]))
+
     if (np.isnan(lk) or np.isinf(lk)):
         lk = 0
     # next, the optimal number of tiles
@@ -549,7 +558,10 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     print 'number of tiles = ', kopt ,', expected efficiency = %.4f' %ropt ,', xi/tile = ', nkx ,', yi/tile = ', nky ,' \n'
 
     # specify overlap
-    Lmax = 10 * np.array([max(lx[:, 0]), max(lx[:, 1])])
+    if lx_tog:
+        Lmax = 10 * np.array([max(lx[:, 0]), max(lx[:, 1])])
+    else:
+        Lmax = 10 * np.array([lx[0], lx[1]])
 
     # init output
     ZI = np.ma.array(np.ones((nyi,nxi), dtype=float), mask=True)    # init output differently than original
