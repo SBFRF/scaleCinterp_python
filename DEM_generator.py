@@ -9,6 +9,7 @@ from dataBuilder import dataBuilder, gridBuilder
 from subsampleData import subsampleData
 from scalecInterpolation import scalecInterpTilePerturbations
 import datetime as DT
+from scipy import signal
 
 
 
@@ -148,5 +149,64 @@ def DEM_generator(dict):
            'x_out': x_out,
            'y_out': y_out}
     return out
+
+def makeWBflow2D(dict):
+    """
+    This is the weight edge scaling function that I developed that works in 2D.
+    It uses two 1D tukey filters combined together using an outer product to get the edge scaling.
+    ax and ay are the parameters of the cross-shore and alongshore edge scaling factors.
+
+    for a Tukey filter, a = 0 gives you no scaling (rectangular window), a = 1 gives you a Hann filter (spelling?)
+
+    :param dict:
+        Keys:
+        x_grid: 2D x-coordinate grid from Meshgrid
+        y_grid: 2D y-coordinate grid from meshgrid
+        ax: alpha value for the x-direction tukey filter.
+        ay: alpha value for the y-direction tukey filter.
+    :return:
+        wbflow - scaling factors for the bspline weights
+    """
+
+    x_grid = dict['x_grid']
+    y_grid = dict['y_grid']
+    ax = dict['ax']
+    ay = dict['ay']
+
+    # cannot exceed 1
+    if ax > 1:
+        ax = 1
+    if ay > 1:
+        ay = 1
+
+    # we are going to do one that smoothes all around the edges.
+
+    window_y = signal.tukey(np.shape(y_grid)[0], alpha=ay)
+    window_x = signal.tukey(np.shape(x_grid)[1], alpha=ax)
+    window = np.outer(window_y, window_x)
+
+    """
+    # what does this look like?
+    sloc = 'C:\Users\dyoung8\Desktop\David Stuff\Projects\CSHORE\Bathy Interpolation\WeightFilterTest'
+    sname = 'wbWeights'
+    # also plot the output like a boss
+    plt.pcolor(x_grid, y_grid, window, cmap=plt.cm.jet, vmin=0, vmax=1)
+    cbar = plt.colorbar()
+    cbar.set_label('Weights', fontsize=16)
+    plt.xlabel('Cross-shore - $x$ ($m$)', fontsize=16)
+    plt.ylabel('Alongshore - $y$ ($m$)', fontsize=16)
+    plt.legend(prop={'size': 14})
+    plt.tick_params(axis='both', which='major', labelsize=12)
+    plt.tick_params(axis='both', which='minor', labelsize=10)
+    ax1 = plt.gca()
+    ax1.spines['right'].set_visible(False)
+    ax1.spines['top'].set_visible(False)
+    plt.axis('tight')
+    plt.tight_layout()
+    plt.savefig(os.path.join(sloc, sname))
+    plt.close()
+    """
+
+    return window
 
 
