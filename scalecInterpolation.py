@@ -74,7 +74,7 @@ def scalecInterpPerturbations(x, z, s, xi, lx, filtername, nmseitol, Ntotal, Ndo
     wt, var_z = consistentWeight(z, s, wtol)
     # normalize weights
     wt = (wt + np.spacing(1)) / (np.spacing(1) + max(wt))
-    
+
     # eliminate useless variables -sb
     # tmp = np.array([])
     # for i in xrange(0,m):
@@ -193,7 +193,7 @@ def scalecInterpPerturbations(x, z, s, xi, lx, filtername, nmseitol, Ntotal, Ndo
                 nmsei[i] = 1
 
         # account for deviation from target scales with fraction of wavenumber band used
-        q = p ** (- m)
+        q = p ** (-m)
         nmsei[i] = (1 - q * (1 - nmsei[i]))
 
         # convolve against data
@@ -217,6 +217,7 @@ def scalecInterpPerturbations(x, z, s, xi, lx, filtername, nmseitol, Ntotal, Ndo
             nmsei[i] = 1
 
     return zi, msei, nmsei, msri
+
 
 def scalecInterp(x, z, s, xi, lx, filtername, nmseitol):
     """
