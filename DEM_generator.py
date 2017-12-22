@@ -73,9 +73,11 @@ def DEM_generator(dict):
     yFRF_s = dict['yFRF_s']          # survey yFRF coordinates
     Z_s = dict['Z_s']                # survey bottom elevations
 
+    """
     xFRFi_vec = dict['xFRFi_vec']   # x-positions from the full background bathy
     yFRFi_vec = dict['yFRFi_vec']   # y-positions from the full background bathy
     Zi = dict['Zi']                 # full background bathymetry elevations
+    """
 
 
 
@@ -106,12 +108,14 @@ def DEM_generator(dict):
     x_grid, y_grid = gridBuilder(x0, x1, y0, y1, lambdaX, lambdaY, dict['grid_coord_check'], dict['grid_filename'])
     t_grid = np.zeros_like((x_grid))  # Interpolate in time -- Not Developed Yet, but place holder there
 
+    """
     # here is where we cut out the data from the original grid.
     x1 = np.where(xFRFi_vec == min(x_grid[0,:]))[0][0]
     x2 = np.where(xFRFi_vec == max(x_grid[0,:]))[0][0]
     y1 = np.where(yFRFi_vec == min(y_grid[:,1]))[0][0]
     y2 = np.where(yFRFi_vec == max(y_grid[:,1]))[0][0]
     Zi_s = Zi[y1:y2 + 1, x1:x2 + 1]
+    """
 
     # this is what Spike had... it is NOT identical to what the Matlab script passes to scalecInterpTilePerturbations
     xi = np.array([x_grid.flatten(), y_grid.flatten(), t_grid.flatten()]).T  # grid locations, flatten make row-major style
