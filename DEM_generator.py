@@ -15,6 +15,7 @@ from matplotlib import pyplot as plt
 from scipy import signal
 
 
+
 def DEM_generator(dict):
     """
     This is a function that takes in data with the below keys, and will generate a cartesian grid if there is not
@@ -271,5 +272,6 @@ def makeWBflow2D(dict):
     plt.savefig(os.path.join(sloc, sname))
     plt.close()
     """
+
 
     return window
