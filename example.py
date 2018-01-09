@@ -9,7 +9,7 @@ This file will give an example of how to run DEM generator with given files both
 # gridded bathymetry data run through scaleC
 # filelist = ['http://134.164.129.55/thredds/dodsC/FRF/survey/gridded/FRF_20160726_1121_FRF_NAVD88_LARC_GPS_UTC_v20170320_grid_latlon.nc']
 # transect bathymetry data run though scaleC
-# filelist = ['/home/spike/repos/scalecInterp_python/FRF_20160726_1121_FRF_NAVD88_LARC_GPS_UTC_v20170320.nc']  # files with NEW data that are in background grid
+# filelist = ['/home/spike/repos/scaleCinterp_python/FRF_20160726_1121_FRF_NAVD88_LARC_GPS_UTC_v20170320.nc']  # files with NEW data that are in background grid
 # filelist = ['http://bones/thredds/dodsC/FRF/geomorphology/elevationTransects/survey/FRF_20160527_1119_FRF_NAVD88_LARC_GPS_UTC_v20170320.nc']
 filelist = ['http://bones/thredds/dodsC/FRF/geomorphology/elevationTransects/survey/FRF_20160628_1120_FRF_NAVD88_LARC_GPS_UTC_v20170320.nc']
 filelist = ['http://bones/thredds/dodsC/FRF/geomorphology/elevationTransects/survey/FRF_20160726_1121_FRF_NAVD88_LARC_GPS_UTC_v20170320.nc']
