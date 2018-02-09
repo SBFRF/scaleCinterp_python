@@ -9,6 +9,10 @@ from dataBuilder import dataBuilder, gridBuilder
 from subsampleData import subsampleData
 from scalecInterpolation import scalecInterpTilePerturbations
 import datetime as DT
+import os
+import scipy.io as spio
+from matplotlib import pyplot as plt
+from scipy import signal
 
 
 
@@ -38,6 +42,10 @@ def DEM_generator(dict):
     yFRF_s                      # survey yFRF coordinates
     Z_s                         # survey bottom elevations
 
+    xFRFi_vec                   # x-positions from the full background bathy
+    yFRFi_vec                   # y-positions from the full background bathy
+    Zi                          # full background bathymetry elevations
+
     :return: dict with keys:
         zi, the depth estimate
         msei, the mean square interpolation error estimate (units of z)
@@ -66,6 +74,12 @@ def DEM_generator(dict):
     yFRF_s = dict['yFRF_s']          # survey yFRF coordinates
     Z_s = dict['Z_s']                # survey bottom elevations
 
+    """
+    xFRFi_vec = dict['xFRFi_vec']   # x-positions from the full background bathy
+    yFRFi_vec = dict['yFRFi_vec']   # y-positions from the full background bathy
+    Zi = dict['Zi']                 # full background bathymetry elevations
+    """
+
 
 
 
@@ -81,8 +95,12 @@ def DEM_generator(dict):
     # I use my dictionary instead of the dataBuilder function from plant's code !!!!!
     # x, z = dataBuilder(filelist, data_coord_check='FRF')
     x = np.array([xFRF_s, yFRF_s, np.zeros(xFRF_s.size)]).T
+
+
     z = Z_s[:, np.newaxis]
-    s = np.ones((np.size(x[:,1]),1))     # TODO estimate measurement error from the crab and incorporate to scripts
+
+    s = np.zeros((np.size(x[:,1]),1))    # TODO estimate measurement error from the crab and incorporate to scripts
+
     print 'loading time is %s seconds' % (DT.datetime.now() - t)
     assert x.shape[0] > 1, 'Data Did not Load!'
     ####################################################################
@@ -90,25 +108,40 @@ def DEM_generator(dict):
     ####################################################################
     x_grid, y_grid = gridBuilder(x0, x1, y0, y1, lambdaX, lambdaY, dict['grid_coord_check'], dict['grid_filename'])
     t_grid = np.zeros_like((x_grid))  # Interpolate in time -- Not Developed Yet, but place holder there
+
+    """
+    # here is where we cut out the data from the original grid.
+    x1 = np.where(xFRFi_vec == min(x_grid[0,:]))[0][0]
+    x2 = np.where(xFRFi_vec == max(x_grid[0,:]))[0][0]
+    y1 = np.where(yFRFi_vec == min(y_grid[:,1]))[0][0]
+    y2 = np.where(yFRFi_vec == max(y_grid[:,1]))[0][0]
+    Zi_s = Zi[y1:y2 + 1, x1:x2 + 1]
+    """
+
+    # this is what Spike had... it is NOT identical to what the Matlab script passes to scalecInterpTilePerturbations
     xi = np.array([x_grid.flatten(), y_grid.flatten(), t_grid.flatten()]).T  # grid locations, flatten make row-major style
+
+
     # now make smoothing array same shape as  xi
     xsm = msmoothx*np.ones_like(x_grid)
     ysm = msmoothy*np.ones_like(y_grid)
     tsm = msmootht*np.ones_like(t_grid)
     lx = np.array([xsm.flatten(), ysm.flatten(), tsm.flatten()]).T  # smoothing array , flatten takes row-major style
 
+    # why don't we just pass the meshgrid output?  that would be simpler?
     N, M = np.shape(x_grid)
     x_out = x_grid[0,:].copy()  # grid coordinate for output
     y_out = y_grid[:,0].copy()  # grid coordinate for output
 
-    del x_grid, y_grid, t_grid
     #####################################################################
     # subsample the data   ##############################################
     #####################################################################
+
     DXsmooth = np.array([msmoothx, msmoothy, msmootht])/4
     DXsmooth[2] = 1  # this hard codes a time smoothing of 1 (units unclear?)
     t = DT.datetime.now()
     Xi, zprime, si = subsampleData(x, z, s, DXsmooth)
+
     # a plot to compare original data to subsampled data
     # from matplotlib import pyplot as plt
     # plt.figure()
@@ -122,31 +155,123 @@ def DEM_generator(dict):
     # plt.legend()
     # plt.close()
 
+
+
     # What's returned here
     print 'subsampling time is %s seconds' % (DT.datetime.now() - t)
+
+
 
     #####################################################################
     # Send it all into scalecinterpolation  -  Here is where the interpolation takes place
     #####################################################################
     t = DT.datetime.now()
     print 'Interpolating'
+    # zi, msei, nmsei, msri = scalecInterpTilePerturbations(Xi, zprime_pert, si, xi, lx, filtername, nmseitol)
     zi, msei, nmsei, msri = scalecInterpTilePerturbations(Xi, zprime, si, xi, lx, filtername, nmseitol)
     print 'Interpolating time is %s seconds' % (DT.datetime.now() - t)
 
-    # save the ouput and reshape
+
+
     # reshape
     zi = np.reshape(zi, (M, N)).T           # zi, the estimate
     msei = np.reshape(msei, (M, N)).T       # msei, the mean square interpolation error estimate (units of z)
     nmsei = np.reshape(nmsei, (M, N)).T     # nmsei, the normalized mean square error
     msri = np.reshape(msri, (M, N)).T       # msri, the mean square residuals
 
-    # package to dictionary
     out = {'Zi': zi,
            'MSEi': msei,
            'NMSEi': nmsei,
            'MSRi': msri,
            'x_out': x_out,
-           'y_out': y_out}
+           'y_out': y_out,
+           }
+
     return out
 
+def makeWBflow(y_grid, Nysmooth, lambdaY):
+    """
+    This is the weight scaling script that Nathanial and Meg use.
+    Looks like it uses a Gaussian function at each edge as the weight scaling factor
+        (or 1 - Gaussian to be more specific).
+    It only splines in the alongshore direction, not cross-shore!
 
+    :param y_grid: 2D grid of y-coordinates (i.e., y meshgrid output)
+    :param Nysmooth: number of smoothing nodes at each y-edge.
+        This is combined with lambdaY to get basically a scaled standard deviation of a Gaussian distribution
+    :param lambdaY: grid spacing in Y.
+        This is combined with Nysmooth to get basically a scaled standard deviation of a Gaussian distribution
+    :return:
+        wbflow - scaling factors for the bspline weights
+    """
+
+
+    # this is what Meg and Mathan have
+    wbflowS1 = np.exp(-1*np.power((y_grid - y_grid[0,0])/float(1*Nysmooth*lambdaY), 2))
+    wbflowS2 = wbflowS1 + np.exp(-1*np.power((y_grid - y_grid[-1,-1])/float(1*Nysmooth*lambdaY), 2))
+    wbflowS3 = 1 - wbflowS2
+    # if less than zero set to zero
+    wbflowS3[wbflowS3<0] = 0
+    wbflow = wbflowS3/np.amax(wbflowS3)
+
+    return wbflow
+
+def makeWBflow2D(dict):
+    """
+    This is the weight edge scaling function that I developed that works in 2D.
+    It uses two 1D tukey filters combined together using an outer product to get the edge scaling.
+    ax and ay are the parameters of the cross-shore and alongshore edge scaling factors.
+
+    for a Tukey filter, a = 0 gives you no scaling (rectangular window), a = 1 gives you a Hann filter (spelling?)
+
+    :param dict:
+        Keys:
+        x_grid: 2D x-coordinate grid from Meshgrid
+        y_grid: 2D y-coordinate grid from meshgrid
+        ax: alpha value for the x-direction tukey filter.
+        ay: alpha value for the y-direction tukey filter.
+    :return:
+        wbflow - scaling factors for the bspline weights
+    """
+
+    x_grid = dict['x_grid']
+    y_grid = dict['y_grid']
+    ax = dict['ax']
+    ay = dict['ay']
+
+    # cannot exceed 1
+    if ax > 1:
+        ax = 1
+    if ay > 1:
+        ay = 1
+
+    # we are going to do one that smoothes all around the edges.
+
+    window_y = signal.tukey(np.shape(y_grid)[0], alpha=ay)
+    window_x = signal.tukey(np.shape(x_grid)[1], alpha=ax)
+    window = np.outer(window_y, window_x)
+
+    """
+    # what does this look like?
+    sloc = 'C:\Users\dyoung8\Desktop\David Stuff\Projects\CSHORE\Bathy Interpolation\WeightFilterTest'
+    sname = 'wbWeights'
+    # also plot the output like a boss
+    plt.pcolor(x_grid, y_grid, window, cmap=plt.cm.jet, vmin=0, vmax=1)
+    cbar = plt.colorbar()
+    cbar.set_label('Weights', fontsize=16)
+    plt.xlabel('Cross-shore - $x$ ($m$)', fontsize=16)
+    plt.ylabel('Alongshore - $y$ ($m$)', fontsize=16)
+    plt.legend(prop={'size': 14})
+    plt.tick_params(axis='both', which='major', labelsize=12)
+    plt.tick_params(axis='both', which='minor', labelsize=10)
+    ax1 = plt.gca()
+    ax1.spines['right'].set_visible(False)
+    ax1.spines['top'].set_visible(False)
+    plt.axis('tight')
+    plt.tight_layout()
+    plt.savefig(os.path.join(sloc, sname))
+    plt.close()
+    """
+
+
+    return window

@@ -121,10 +121,20 @@ def scalecInterpPerturbations(x, z, s, xi, lx, filtername, nmseitol, Ntotal, Ndo
     #    ai = np.reshape(ai, (len(ai),)) # go from shape (len(ai),1) to (len(ai),)... if of that shape
     # ri = ri[:,np.newaxis]
     # initialize output
-    zi = np.zeros((Ni, 1), float)
-    nmsei = np.ones((Ni, 1), float)
-    msei = np.ones((Ni, 1), float)
-    msri = np.ones((Ni, 1), float)
+    zi = np.zeros((Ni,1), float)
+    nmsei = np.ones((Ni,1), float)
+    msei = np.ones((Ni,1), float)
+    msri = np.ones((Ni,1), float)
+
+    # Scale the data for interpolation -- this part was missing from original - added by SB 7/21/17
+    # why was this commented out - Meg does it in her script?
+    """
+    if lx.shape[-1] == m:
+         print 'using constant smoothing scales'
+         L = np.diag(1./lx)
+         x = np.dot(x, L)
+         xi = np.dot(xi, L)
+    """
 
 
     for i in xrange(0, Ni):
@@ -339,7 +349,6 @@ def scalecInterp(x, z, s, xi, lx, filtername, nmseitol):
 
     return zi, msei, nmsei, msri
 
-
 def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     """
      [ZI, MSEI, NMSEI, MSRI] = scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol, WB);
@@ -374,6 +383,12 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
      change log
      12 Feb 2009, NGP,  disabled the figure display so large regions don't croak
     """
+
+    if np.shape(lx) == np.shape(xi):
+        lx_tog = 1
+    else:
+        lx_tog = 0
+
 
     # check dimensions
     Ni, mi = np.shape(xi)
@@ -509,8 +524,12 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
 
     # get optimal tile
     # first compute smoothness/domain size ratio
-    lk = np.max(
-        np.array([np.min(lx[:, 0]), np.min(lx[:, 1])]) / np.array([np.max(xi) - np.min(xi), np.max(yi) - np.min(yi)]))
+    if lx_tog:
+        lk = np.max(
+            np.array([np.min(lx[:, 0]), np.min(lx[:, 1])]) / np.array([np.max(xi) - np.min(xi), np.max(yi) - np.min(yi)]))
+    else:
+        lk = np.max(np.array([np.min(lx[0]), np.min(lx[1])]) / np.array([np.max(xi) - np.min(xi), np.max(yi) - np.min(yi)]))
+
     if (np.isnan(lk) or np.isinf(lk)):
         lk = 0
     # next, the optimal number of tiles
@@ -540,11 +559,16 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     print 'number of tiles = ', kopt ,', expected efficiency = %.4f' %ropt ,', xi/tile = ', nkx ,', yi/tile = ', nky ,' \n'
 
     # specify overlap
-    Lmax = 10 * np.array([max(lx[:, 0]), max(lx[:, 1])])
+    if lx_tog:
+        Lmax = 10 * np.array([max(lx[:, 0]), max(lx[:, 1])])
+    else:
+        Lmax = 10 * np.array([lx[0], lx[1]])
 
     # init output
     ZI = np.ma.array(np.ones((nyi,nxi), dtype=float), mask=True)    # init output differently than original
     NMSEI = np.ma.array(np.ones((nyi,nxi), dtype=float), mask=True) # np.ones((nyi, nxi), float)
+    #  this one is NOT MASKED in Meg's code!!!!!
+
     MSEI = np.ma.array(np.ones((nyi,nxi), dtype=float), mask=True)  # np.nan * np.ones((nyi,nxi), float)
     MSRI = np.ma.array(np.ones((nyi,nxi), dtype=float), mask=True)  # np.nan * np.ones((nyi,nxi), float)
     # begin Interp
@@ -560,17 +584,23 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
         if (len(idxi) > 0):
             # repeat at each yi
             for j in xrange(0, int(ky)):  # Loop through each Y
-                idyi = np.arange(0, int(nky)) + j * int(nky)  # indices to interp this time ** original uses j+1???
-                if (j == ky - 1 and idyi[-1] != nyi):
-                    idyi = np.arange(idyi[0], nyi)  # catch the end here
-                ymin = yi[idyi[0], 0] - Lmax[1]
-                ymax = yi[idyi[-1], 0] + Lmax[1]
-                idxy = idx[np.where((x[idx, 1] < ymax) & (x[idx, 1] > ymin))[0]]
-                if (np.size(idxy) > mi):
+                idyi = np.arange(0, int(nky)) + j * int(nky) # indices to interp this time
+                if(j == ky-1 and idyi[-1] != nyi):
+                    idyi = np.arange(idyi[0], nyi) # catch the end here
+                ymin = yi[idyi[0],0] - Lmax[1]
+                ymax = yi[idyi[-1],0] + Lmax[1]
+                idxy = idx[np.where((x[idx,1] < ymax) & (x[idx,1] > ymin))[0]]
+                if(np.size(idxy) > mi):
+
                     # send to interpolator
                     tmp1, tmp2 = np.meshgrid(idyi, idxi)
-                    Xii = Xi[tmp1, tmp2].T
-                    Yii = Yi[tmp1, tmp2].T
+                    Xii = Xi[tmp1,tmp2].T
+                    Yii = Yi[tmp1,tmp2].T
+
+                    # Xii2 = Xi[idyi[0]:idyi[-1]+1, idxi[0]:idxi[-1]+1]
+                    # Yii2 = Yi[idyi[0]:idyi[-1]+1, idxi[0]:idxi[-1]+1]
+                    # These are equivalent, so that was not the issue...
+
                     # deal with smoothing scales
                     if (lxflag == 'constant'):
                         L = lx
@@ -588,9 +618,7 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
                     if (mi == 2):
                         # interp 2-d
                         # from scalecInterpolation import scalecInterpPerturbations
-                        zi, msei, nmsei, msri = scalecInterpPerturbations(x[idxy, :], z[idxy], s[idxy],
-                                                                          np.array([Xii.flatten(1), Yii.flatten(1)]).T,
-                                                                          L, filtername, nmseitol, Ni, Ndone)
+                        zi, msei, nmsei, msri = scalecInterpPerturbations(x[idxy, :], z[idxy], s[idxy], np.array([Xii.flatten(1), Yii.flatten(1)]).T, L, filtername, nmseitol, Ni, Ndone)
                     elif (mi == 3):
                         # interp 2-d + time
                         # from scalecInterpolation import scalecInterpPerturbations
@@ -599,10 +627,13 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
                     msei = np.reshape(msei, (len(idxi), len(idyi))).T
                     nmsei = np.reshape(nmsei, (len(idxi), len(idyi))).T
                     msri = np.reshape(msri, (len(idxi), len(idyi))).T
-                    Zi[idyi[0]:idyi[-1] + 1, idxi[0]:idxi[-1] + 1] = zi
-                    Msei[idyi[0]:idyi[-1] + 1, idxi[0]:idxi[-1] + 1] = msei
-                    Nmsei[idyi[0]:idyi[-1] + 1, idxi[0]:idxi[-1] + 1] = nmsei
-                    Msri[idyi[0]:idyi[-1] + 1, idxi[0]:idxi[-1] + 1] = msri
+
+                    # this has been changed from the below?  I don't know how the variable names were mixed up
+                    ZI[idyi[0]:idyi[-1] + 1, idxi[0]:idxi[-1] + 1] = zi
+                    MSEI[idyi[0]:idyi[-1] + 1, idxi[0]:idxi[-1] + 1] = msei
+                    NMSEI[idyi[0]:idyi[-1] + 1, idxi[0]:idxi[-1] + 1] = nmsei
+                    MSRI[idyi[0]:idyi[-1] + 1, idxi[0]:idxi[-1] + 1] = msri
+
                     Ndone = Ndone + len(idyi) * len(idxi)
                     del tmp1, tmp2
                     # if(etime(clock,tcheck)>60)
