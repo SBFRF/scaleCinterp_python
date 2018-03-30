@@ -42,7 +42,7 @@ def subsampleData(X, z, e, Dx):
     
     # allow nans
     # 03 Jan 2011: ngp adds "+e+ so that data with nan error is chucked
-    print 'Subsampling data'
+    # print 'Subsampling data'
     #np.seterr(invalid='ignore')    
     tmp = z + e
     X = X[~np.isnan(tmp).any(1),:]
