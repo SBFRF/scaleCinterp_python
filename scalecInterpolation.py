@@ -494,7 +494,6 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     # add time
     if (mi == 3):
         Ti = Ti * L[2, 2]
-
         # need some consistent weights
     wtol = 0.01
     try:
@@ -627,10 +626,7 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
 
                     Ndone = Ndone + len(idyi) * len(idxi)
                     del tmp1, tmp2
-                    # if(etime(clock,tcheck)>60)
-                    #    tcheck = clock
-                    #    print 'progres: completed', Ndone ,' of ', nyi*nxi ,' points \n'
-    # tend = clock# FIND PYTHON EQUIVALENT
+
     # print 'interpolated ', np.fix(nyi*nxi/(etime(tend,tstart))) ,' points per second (tiled) \n'
 
     # return output in cols
