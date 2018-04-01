@@ -68,11 +68,6 @@ def DEM_generator(dict):
     yFRF_s = dict['yFRF_s']          # survey yFRF coordinates
     Z_s = dict['Z_s']                # survey bottom elevations
 
-    """
-    xFRFi_vec = dict['xFRFi_vec']   # x-positions from the full background bathy
-    yFRFi_vec = dict['yFRFi_vec']   # y-positions from the full background bathy
-    Zi = dict['Zi']                 # full background bathymetry elevations
-    """
     #### data checks ###########3
     filters = ['hanning', 'linloess', 'quadloess', 'boxcar', 'si']
     assert filtername in filters, 'Check filter name, not appropriate for current DEM generator function'
@@ -113,7 +108,7 @@ def DEM_generator(dict):
     #####################################################################
 
     DXsmooth = np.array([msmoothx, msmoothy, msmootht])/4
-    DXsmooth[2] = 1  # this hard codes a time smoothing of 1 (units unclear?)
+    DXsmooth[2] = 1  # this hard codes a time smoothing of 1 for subsampling of data
     t = DT.datetime.now()
     Xi, zprime, si = subsampleData(x, z, s, DXsmooth)
     print 'subsampling time is %s seconds' % (DT.datetime.now() - t)
