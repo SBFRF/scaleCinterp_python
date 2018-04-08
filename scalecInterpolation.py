@@ -635,7 +635,7 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     NMSEI = NMSEI.flatten(1)
     MSRI  = MSRI.flatten(1)
 
-    # fix up error too - SB redone-- ask asked by original comments
+    # fix up error too - SB redone-- asked by original comments
     idd = np.argwhere(MSEI.mask == True).squeeze()
     if (np.size(idd) > 0):
         MSEI[idd] = var_z + np.mean(s**2)
