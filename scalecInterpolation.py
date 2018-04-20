@@ -126,21 +126,12 @@ def scalecInterpPerturbations(x, z, s, xi, lx, filtername, nmseitol, Ntotal, Ndo
     msei = np.ones((Ni,1), float)
     msri = np.ones((Ni,1), float)
 
-    # Scale the data for interpolation -- this part was missing from original - added by SB 7/21/17
-    # why was this commented out - Meg does it in her script?
-    """
-    if lx.shape[-1] == m:
-         print 'using constant smoothing scales'
-         L = np.diag(1./lx)
-         x = np.dot(x, L)
-         xi = np.dot(xi, L)
-    """
-
+    # Scale the data for interpolation
 
     for i in xrange(0, Ni):
         # center on point of interest
         y = x - (np.ones((N, 1), float) * xi[i, :])
-
+        raise NotImplementedError('Check your smoothing uni/bi directional')
         # now scale if using individual smoothing scales
         if (len(lx) == m):
             # constant scale obs. and interp. locations

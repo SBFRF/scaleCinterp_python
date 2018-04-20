@@ -7,7 +7,6 @@ Created on Wed Nov 05 20:31:07 2014
 import numpy as np
 from supportingMethods import consistentWeight
 
-
 def subsampleData(X, z, e, Dx):
     """ [Xi,zi, si, ni, Ji, Jmax, X0] = subsampleData(X,z,e,DX);
     
@@ -42,8 +41,7 @@ def subsampleData(X, z, e, Dx):
     
     # allow nans
     # 03 Jan 2011: ngp adds "+e+ so that data with nan error is chucked
-    print 'Subsampling data'
-    #np.seterr(invalid='ignore')    
+    #np.seterr(invalid='ignore')
     tmp = z + e
     X = X[~np.isnan(tmp).any(1),:]
     z = z[~np.isnan(tmp)]
