@@ -198,8 +198,7 @@ def gridBuilder(x0, x1, y0, y1, dx, dy, grid_coord_check, grid_filename, EPSG=26
             x0, y0 = UTM16N(x0, y0)
             x1, y1 = UTM16N(x1, y1)
 
-
-        x0 = np.round(x0, decimals=0)  # why are these rounded ?  this moves the origin of the grid?
+        x0 = np.round(x0, decimals=0)
         x1 = np.round(x1, decimals=0)
         y0 = np.round(y0, decimals=0)
         y1 = np.round(y1, decimals=0)
@@ -216,7 +215,6 @@ def gridBuilder(x0, x1, y0, y1, dx, dy, grid_coord_check, grid_filename, EPSG=26
         xCoord = np.arange(x_min, x_max+dx, dx)
         yCoord = np.arange(y_min, y_max+dx, dy)
         x_grid, y_grid = np.meshgrid(xCoord, yCoord)
-        # pass
     else:
         try:
             gridFile = nc.Dataset(grid_filename)   # load netCDF file with grid node locations
