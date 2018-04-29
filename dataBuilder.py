@@ -12,10 +12,11 @@ import pyproj
 
 """ BUILD #1: """ 
 def readInDataSet(filename):
-    """
-    This function opens a file of various types and puts data into 3 columar variables
-    :param filename:
-    :return: x, y, z (1 d array of observation data)
+    """This function opens a file of various types and puts data into 3 columar variables
+
+    :param filename: return: x, y, z (1 d array of observation data)
+    :returns: x, y, z (1 d array of observation data)
+
     """
     dataX, dataY, dataZ = [], [], []              
     # Handle NetCDF files
@@ -111,17 +112,14 @@ def readInDataSet(filename):
     return dataX, dataY, dataZ
   
 def dataBuilder(filelist, data_coord_check, EPSG=26918):
-    """
-    this function reads the measured data sets and converts to UTM (assumed Longitude, latitude)
-
+    """this function reads the measured data sets and converts to UTM (assumed Longitude, latitude)
+    
     This function assumes UTM zone 18N at the FRF in NAD83
 
     :param filelist: list of files that has single time step of bathymetry measurements
+    :param data_coord_check: param EPSG:  EPSG code used for tranlating Latitude/longitude to UTM ( assumed FRF) UTM zone 18 N
+    :param EPSG:  (Default value = 26918)
 
-    :param data_coord_check:
-
-    :param EPSG:  EPSG code used for tranlating Latitude/longitude to UTM ( assumed FRF) UTM zone 18 N
-    :return:
     """
     tempX, tempY, tempZ = [], [], [] 
     for files in filelist:
@@ -142,6 +140,15 @@ def dataBuilder(filelist, data_coord_check, EPSG=26918):
 
 # load NOAA DEM
 def loadNOAAdem(filename, x0, x1, y0, y1):
+    """
+
+    :param filename: 
+    :param x0: 
+    :param x1: 
+    :param y0: 
+    :param y1: 
+
+    """
     from scipy.io import netcdf 
     f = netcdf.netcdf_file(filename, 'r')
     xtmp = f.variables['x'][:]
@@ -173,10 +180,9 @@ Created on Thu Oct 16 11:25:54 2014
 # this was brought in from another file, - SB
 """
 def gridBuilder(x0, x1, y0, y1, dx, dy, grid_coord_check, grid_filename, EPSG=26918):
-    """
-        uses default to EPSG code of US EST coast (FRF location),
+    """uses default to EPSG code of US EST coast (FRF location),
     This function could also use key word generation
-
+    
     Builds the grid nodes, using verticies location
 
     :param x0: xbound of grid points
@@ -185,10 +191,11 @@ def gridBuilder(x0, x1, y0, y1, dx, dy, grid_coord_check, grid_filename, EPSG=26
     :param y1: ybound of grid points
     :param dx: cell size in x
     :param dy: cell size in y
-    :param grid_coord_check:  a key to interpret the x,y bounds
+    :param grid_coord_check: a key to interpret the x,y bounds
     :param grid_filename: a place to grab previous grid points, netCDF file must have keys of xFRF, yFRF
-    :param EPSG:
-    :return: an x grid and a y grid
+    :param EPSG: return: an x grid and a y grid (Default value = 26918)
+    :returns: an x grid and a y grid
+
     """
     if (grid_filename.strip() == ''):  # if there's no grid filename
         # build grid in UTM using dx dy, and 2 corners of grid(x0, y0)

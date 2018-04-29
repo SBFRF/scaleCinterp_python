@@ -8,6 +8,12 @@ import numpy as np
 import scipy as sp
 
 def changeShape(dataObj, shape):
+    """
+
+    :param dataObj: 
+    :param shape: 
+
+    """
     if(np.shape(dataObj) != shape):
         reshapedDataObj = np.reshape(dataObj, shape)
         return reshapedDataObj
@@ -15,6 +21,11 @@ def changeShape(dataObj, shape):
         return np.array(dataObj)
         
 def omitNans(dataObj):
+    """
+
+    :param dataObj: 
+
+    """
     import math
     newDataObj = []
     for p in dataObj:
@@ -76,6 +87,13 @@ def omitNans(dataObj):
 #    return np.array(C, dtype=int)
         
 def makeWBFlow(Ylocal, Nysmooth, mindyg):
+    """
+
+    :param Ylocal: 
+    :param Nysmooth: 
+    :param mindyg: 
+
+    """
     wbflow = np.exp(-((Ylocal - Ylocal[1]) / (1 * Nysmooth * mindyg)) ** 2)
     wbflow = wbflow + np.exp(-((Ylocal - Ylocal[-1]) / (1 * Nysmooth * mindyg)) ** 2);
     wbflow = 1 - wbflow
@@ -99,9 +117,8 @@ def makeWBFlow(Ylocal, Nysmooth, mindyg):
     # """
     
 def consistentWeight(z, e2, wtol=0.1):
-    """
-    compute weights consistent with observations and expected error variance for each observation
-     
+    """compute weights consistent with observations and expected error variance for each observation
+    
     [w, s2] = consistentWeight(z, e2, wtol)
     
     Input:
@@ -116,7 +133,12 @@ def consistentWeight(z, e2, wtol=0.1):
     assume (wj^2) = s2/(s2 + e2j), where s2 is true variance and e2j is error variance at observation j
     solve problem by guessing wj, then compute s2, then update wj
     assumes that true variance, s2, is constant over the data
-    """ 
+
+    :param z: 
+    :param e2: 
+    :param wtol:  (Default value = 0.1)
+
+    """
     # initial guess, weights are uniform
     #N = np.size(e2)
     winit = np.ones((z.shape[0],1), float)
@@ -142,9 +164,9 @@ def consistentWeight(z, e2, wtol=0.1):
     return w, s2
 
 def svd_invP(m, p):
-    """ invert matrix m
+    """invert matrix m
      retain eigen functions that account for p% of the variance
-     
+    
      m_inv = svd_invP(m, p);
     
      input
@@ -153,6 +175,10 @@ def svd_invP(m, p):
     
      output
         m_inv is its inverse, in the SVD sense
+
+    :param m: 
+    :param p: 
+
     """
     # the retained variance (does not need to be 90%)
     P = p / 100
@@ -188,8 +214,7 @@ def svd_invP(m, p):
     return m_inv
 
 def si_wt(x, w=None):
-    """
-    [a] = si_wt(x, w)
+    """[a] = si_wt(x, w)
     
     Input:
     x are nxm inputs, weights will be centered on x=0
@@ -197,6 +222,10 @@ def si_wt(x, w=None):
     
     Output:
     a are weights 0<=w<=1
+
+    :param x: 
+    :param w:  (Default value = None)
+
     """
     n, m = np.shape(x)
     Ln = 2 # fix up so scaling sends weights to zero at x=1
@@ -234,14 +263,16 @@ def si_wt(x, w=None):
     return w
 
 def hanning_wt(r):
-    """
-    w = hanning_wt(x)
+    """w = hanning_wt(x)
     
     Input:
     x are nxm inputs, weights will be centered on x=0
     
     Output:
     w are weights 0<=w<=1
+
+    :param r: 
+
     """
     m = np.size(r)    
         
@@ -256,10 +287,12 @@ def hanning_wt(r):
     return r
 
 def loess_wt(r):
-    """
-    [w] = loess_wt(x)
+    """[w] = loess_wt(x)
     Input: x are nxm inputs, weights will be centered on x=0
     Output: w are weights 0<=w<=1
+
+    :param r: 
+
     """
     
     n, m = np.shape(r)
@@ -276,6 +309,13 @@ def loess_wt(r):
     return r
     
 def loess_kernelND(d, p, Dx=0.05):
+    """
+
+    :param d: 
+    :param p: 
+    :param Dx:  (Default value = 0.05)
+
+    """
     x = np.arange(-(1 + Dx), (1 + Dx), Dx) 
     x = np.reshape(x, (np.size(x, axis=0), 1)) # reshape x to be a column vector 
     N = np.size(x, axis=0)
@@ -361,9 +401,8 @@ def loess_kernelND(d, p, Dx=0.05):
     # """
     
 def regr_xzw(X, z, w=None, nargout=2):    
-    """ 
-     [b,brmse,sk,n,msz,msr,nmse] = regr_xzw(X,z,w);
-     
+    """[b,brmse,sk,n,msz,msr,nmse] = regr_xzw(X,z,w);
+    
      general linear regression call
      -nan- returned if data-data correlation matrix is badly conditioned
     
@@ -381,6 +420,12 @@ def regr_xzw(X, z, w=None, nargout=2):
        msz, variance of data
        msr, variance of residuals
        nmse, percent of white error input variance passed by weights
+
+    :param X: 
+    :param z: 
+    :param w:  (Default value = None)
+    :param nargout:  (Default value = 2)
+
     """
     w = None
     

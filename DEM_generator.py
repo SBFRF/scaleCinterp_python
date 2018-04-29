@@ -17,8 +17,7 @@ from scipy import signal
 
 
 def DEM_generator(dict):
-    """
-    This is a function that takes in data with the below keys, and will generate a cartesian grid if there is not
+    """This is a function that takes in data with the below keys, and will generate a cartesian grid if there is not
     one already built.  if there is a grid given it will grid to the same locations.  If there is not it will generate
     a new grid with the x0,y0 and x1, y1, lambdaX and lambdaY keys.  This function will import data, subsample data,
     and grid data using scaleCinterp from plant 2002.  This will not incorporate to a background grid.
@@ -44,12 +43,12 @@ def DEM_generator(dict):
      :key xFRFi_vec:  x-positions from the full background bathy
      :key yFRFi_vec:  y-positions from the full background bathy
      :key Zi:         full background bathymetry elevations
-
-    :return: dict with keys
+    :returns: dict with keys
         :key zi: the depth estimate
         :key msei: the mean square interpolation error estimate (units of z)
         :key nmsei: the normalized mean square error
         :key msri: the mean square residuals
+
     """
     x0 = dict['x0']             # Minimum x-value of the output grid (origin)
     y0 = dict['y0']             # Minimum y-value of the output grid
@@ -150,8 +149,7 @@ def DEM_generator(dict):
     return out
 
 def makeWBflow(y_grid, Nysmooth, lambdaY):
-    """
-    This is the weight scaling script that Nathanial and Meg use.
+    """This is the weight scaling script that Nathanial and Meg use.
     Looks like it uses a Gaussian function at each edge as the weight scaling factor
         (or 1 - Gaussian to be more specific).
     It only splines in the alongshore direction, not cross-shore!
@@ -161,8 +159,8 @@ def makeWBflow(y_grid, Nysmooth, lambdaY):
         This is combined with lambdaY to get basically a scaled standard deviation of a Gaussian distribution
     :param lambdaY: grid spacing in Y.
         This is combined with Nysmooth to get basically a scaled standard deviation of a Gaussian distribution
-    :return:
-        wbflow - scaling factors for the bspline weights
+    :returns: wbflow - scaling factors for the bspline weights
+
     """
 
 
@@ -177,21 +175,19 @@ def makeWBflow(y_grid, Nysmooth, lambdaY):
     return wbflow
 
 def makeWBflow2D(dict):
-    """
-    This is the weight edge scaling function that I developed that works in 2D.
+    """This is the weight edge scaling function that I developed that works in 2D.
     It uses two 1D tukey filters combined together using an outer product to get the edge scaling.
     ax and ay are the parameters of the cross-shore and alongshore edge scaling factors.
-
+    
     for a Tukey filter, a = 0 gives you no scaling (rectangular window), a = 1 gives you a Hann filter (spelling?)
 
-    :param dict:
-        Keys:
+    :param dict: Keys:
         :key x_grid: 2D x-coordinate grid from Meshgrid
         :key y_grid: 2D y-coordinate grid from meshgrid
         :key ax: alpha value for the x-direction tukey filter.
         :key ay: alpha value for the y-direction tukey filter.
-    :return:
-        wbflow - scaling factors for the bspline weights
+    :returns: wbflow - scaling factors for the bspline weights
+
     """
 
     x_grid = dict['x_grid']

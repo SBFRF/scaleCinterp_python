@@ -8,7 +8,7 @@ import numpy as np
 from supportingMethods import consistentWeight
 
 def subsampleData(X, z, e, Dx):
-    """ [Xi,zi, si, ni, Ji, Jmax, X0] = subsampleData(X,z,e,DX);
+    """[Xi,zi, si, ni, Ji, Jmax, X0] = subsampleData(X,z,e,DX);
     
      interpolate data into regular sample bins using boxcar window
     
@@ -35,8 +35,14 @@ def subsampleData(X, z, e, Dx):
           ZZ = repmat(nan,Jmax(1),Jmax(2)); % careful, read in flipped
           EE = ZZ;
           ZZ(Ji) = zi; ZZ = ZZ'; % flip to usual orientation for matlab
-          EE(Ji) = si; EE = EE'; 
+          EE(Ji) = si; EE = EE';
           pcolor(XX,YY,ZZ);
+
+    :param X: 
+    :param z: 
+    :param e: 
+    :param Dx: 
+
     """
     
     # allow nans
