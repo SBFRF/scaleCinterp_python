@@ -10,8 +10,11 @@ import scipy as sp
 def changeShape(dataObj, shape):
     """
 
-    :param dataObj: 
-    :param shape: 
+    Args:
+      dataObj: param shape:
+      shape: 
+
+    Returns:
 
     """
     if(np.shape(dataObj) != shape):
@@ -23,7 +26,10 @@ def changeShape(dataObj, shape):
 def omitNans(dataObj):
     """
 
-    :param dataObj: 
+    Args:
+      dataObj: 
+
+    Returns:
 
     """
     import math
@@ -89,9 +95,12 @@ def omitNans(dataObj):
 def makeWBFlow(Ylocal, Nysmooth, mindyg):
     """
 
-    :param Ylocal: 
-    :param Nysmooth: 
-    :param mindyg: 
+    Args:
+      Ylocal: param Nysmooth:
+      mindyg: 
+      Nysmooth: 
+
+    Returns:
 
     """
     wbflow = np.exp(-((Ylocal - Ylocal[1]) / (1 * Nysmooth * mindyg)) ** 2)
@@ -134,9 +143,12 @@ def consistentWeight(z, e2, wtol=0.1):
     solve problem by guessing wj, then compute s2, then update wj
     assumes that true variance, s2, is constant over the data
 
-    :param z: 
-    :param e2: 
-    :param wtol:  (Default value = 0.1)
+    Args:
+      z: param e2:
+      wtol: Default value = 0.1)
+      e2: 
+
+    Returns:
 
     """
     # initial guess, weights are uniform
@@ -176,8 +188,11 @@ def svd_invP(m, p):
      output
         m_inv is its inverse, in the SVD sense
 
-    :param m: 
-    :param p: 
+    Args:
+      m: param p:
+      p: 
+
+    Returns:
 
     """
     # the retained variance (does not need to be 90%)
@@ -223,8 +238,11 @@ def si_wt(x, w=None):
     Output:
     a are weights 0<=w<=1
 
-    :param x: 
-    :param w:  (Default value = None)
+    Args:
+      x: param w:  (Default value = None)
+      w:  (Default value = None)
+
+    Returns:
 
     """
     n, m = np.shape(x)
@@ -271,7 +289,10 @@ def hanning_wt(r):
     Output:
     w are weights 0<=w<=1
 
-    :param r: 
+    Args:
+      r: 
+
+    Returns:
 
     """
     m = np.size(r)    
@@ -291,7 +312,10 @@ def loess_wt(r):
     Input: x are nxm inputs, weights will be centered on x=0
     Output: w are weights 0<=w<=1
 
-    :param r: 
+    Args:
+      r: 
+
+    Returns:
 
     """
     
@@ -311,9 +335,12 @@ def loess_wt(r):
 def loess_kernelND(d, p, Dx=0.05):
     """
 
-    :param d: 
-    :param p: 
-    :param Dx:  (Default value = 0.05)
+    Args:
+      d: param p:
+      Dx: Default value = 0.05)
+      p: 
+
+    Returns:
 
     """
     x = np.arange(-(1 + Dx), (1 + Dx), Dx) 
@@ -421,10 +448,13 @@ def regr_xzw(X, z, w=None, nargout=2):
        msr, variance of residuals
        nmse, percent of white error input variance passed by weights
 
-    :param X: 
-    :param z: 
-    :param w:  (Default value = None)
-    :param nargout:  (Default value = 2)
+    Args:
+      X: param z:
+      w: Default value = None)
+      nargout: Default value = 2)
+      z: 
+
+    Returns:
 
     """
     w = None

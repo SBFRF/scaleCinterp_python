@@ -7,6 +7,7 @@ This file will give an example of how to run DEM generator with given files both
  to use either comment the other
 """
 def main():
+    """ """
     # gridded bathymetry data run through scaleC
     # filelist = ['http://134.164.129.55/thredds/dodsC/FRF/survey/gridded/FRF_20160726_1121_FRF_NAVD88_LARC_GPS_UTC_v20170320_grid_latlon.nc']
     # transect bathymetry data run though scaleC

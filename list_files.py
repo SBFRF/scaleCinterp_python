@@ -8,8 +8,11 @@ import glob
 def list_files(datapath, datatype):
     """
 
-    :param datapath: 
-    :param datatype: 
+    Args:
+      datapath: param datatype:
+      datatype: 
+
+    Returns:
 
     """
     # returns a list of names (with extension, without full path) of all files 

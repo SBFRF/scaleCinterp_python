@@ -38,10 +38,13 @@ def subsampleData(X, z, e, Dx):
           EE(Ji) = si; EE = EE';
           pcolor(XX,YY,ZZ);
 
-    :param X: 
-    :param z: 
-    :param e: 
-    :param Dx: 
+    Args:
+      X: param z:
+      e: param Dx:
+      z: 
+      Dx: 
+
+    Returns:
 
     """
     

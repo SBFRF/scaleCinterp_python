@@ -15,7 +15,10 @@ import pyproj
 def readInDataSet(filename):
     """
 
-    :param filename: 
+    Args:
+      filename: 
+
+    Returns:
 
     """
     dataX, dataY, dataZ = [], [], []
@@ -111,9 +114,12 @@ def dataBuilder(filelist, data_coord_check, EPSG=26918):
     
     This function assumes UTM zone 18N at the FRF in NAD83
 
-    :param filelist: list of files that has single time step of bathymetry measurements
-    :param data_coord_check: param EPSG:  EPSG code used for tranlating Latitude/longitude to UTM ( assumed FRF) UTM zone 18 N
-    :param EPSG:  (Default value = 26918)
+    Args:
+      filelist: list of files that has single time step of bathymetry measurements
+      data_coord_check: param EPSG:  EPSG code used for tranlating Latitude/longitude to UTM ( assumed FRF) UTM zone 18 N
+      EPSG: Default value = 26918)
+
+    Returns:
 
     """
     tempX, tempY, tempZ = [], [], []
@@ -138,11 +144,14 @@ def dataBuilder(filelist, data_coord_check, EPSG=26918):
 def loadNOAAdem(filename, x0, x1, y0, y1):
     """
 
-    :param filename: 
-    :param x0: 
-    :param x1: 
-    :param y0: 
-    :param y1: 
+    Args:
+      filename: param x0:
+      x1: param y0:
+      y1: 
+      x0: 
+      y0: 
+
+    Returns:
 
     """
     from scipy.io import netcdf
@@ -170,16 +179,19 @@ def loadNOAAdem(filename, x0, x1, y0, y1):
 def gridBuilder(x0, x1, y0, y1, dx, dy, grid_coord_check, grid_filename, EPSG=26918):
     """
 
-    :param x0: origin in x
-    :param x1: other corner in x
-    :param y0: origin in y
-    :param y1: other cordner in y
-    :param dx: cell spacing in x
-    :param dy: cell spacing in y
-    :param grid_coord_check: param grid_filename: file name for grid
-    :param EPSG: standardized grid (Default value = 26918)
-    :param grid_filename: 
-    :returns: xgrid, ygrid
+    Args:
+      x0: origin in x
+      x1: other corner in x
+      y0: origin in y
+      y1: other cordner in y
+      dx: cell spacing in x
+      dy: cell spacing in y
+      grid_coord_check: param grid_filename: file name for grid
+      EPSG: standardized grid (Default value = 26918)
+      grid_filename: returns: xgrid, ygrid
+
+    Returns:
+      xgrid, ygrid
 
     """
     if (grid_filename.strip() == ''):  # if there's no grid filename

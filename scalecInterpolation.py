@@ -36,15 +36,18 @@ def scalecInterpPerturbations(x, z, s, xi, lx, filtername, nmseitol, Ntotal, Ndo
        msri, the mean square residuals
        HWAITBAR, the waitbar handle
 
-    :param x: 
-    :param z: 
-    :param s: 
-    :param xi: 
-    :param lx: 
-    :param filtername: 
-    :param nmseitol: 
-    :param Ntotal: 
-    :param Ndone: 
+    Args:
+      x: param z:
+      s: param xi:
+      lx: param filtername:
+      nmseitol: param Ntotal:
+      Ndone: 
+      z: 
+      xi: 
+      filtername: 
+      Ntotal: 
+
+    Returns:
 
     """
     # deal with input
@@ -261,13 +264,16 @@ def scalecInterp(x, z, s, xi, lx, filtername, nmseitol):
        nmsei, the normalized mean square error
        msri, the mean square residuals
 
-    :param x: 
-    :param z: 
-    :param s: 
-    :param xi: 
-    :param lx: 
-    :param filtername: 
-    :param nmseitol: 
+    Args:
+      x: param z:
+      s: param xi:
+      lx: param filtername:
+      nmseitol: 
+      z: 
+      xi: 
+      filtername: 
+
+    Returns:
 
     """
     # fix up input data
@@ -391,13 +397,16 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
      change log
      12 Feb 2009, NGP,  disabled the figure display so large regions don't croak
 
-    :param x: 
-    :param z: 
-    :param s: 
-    :param xi: 
-    :param lx: 
-    :param filtername: 
-    :param nmseitol: 
+    Args:
+      x: param z:
+      s: param xi:
+      lx: param filtername:
+      nmseitol: 
+      z: 
+      xi: 
+      filtername: 
+
+    Returns:
 
     """
 
@@ -691,13 +700,16 @@ def scalecInterpTile(x, z, s, xi, lx, filtername, nmseitol):
     
      modifications by updating the trend only where valid perturbations were interpolated
 
-    :param x: 
-    :param z: 
-    :param s: 
-    :param xi: 
-    :param lx: 
-    :param filtername: 
-    :param nmseitol: 
+    Args:
+      x: param z:
+      s: param xi:
+      lx: param filtername:
+      nmseitol: 
+      z: 
+      xi: 
+      filtername: 
+
+    Returns:
 
     """
     # catch  input

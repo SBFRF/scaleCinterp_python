@@ -11,16 +11,19 @@ from scipy import interpolate, signal
 def bspline_pertgrid(Zi, w, splinebctype=0, lc=4, dxm=2, dxi=1):
     """
 
-    :param Zi: the gridded perturbation data (Nx1 or NxM)
-    :param w: weights for Zi (same shape)
-    :param splinebctype: 2 - second derivative goes to zero at boundary
-            1 - first derivative goes to zero at boundary
-            0 - value is zero at boundary
-            10 - force value and derivative (first?!?) to zero at boundary (Default value = 0)
-    :param lc: smoothing constraint value (usually 4) (Default value = 4)
-    :param dxm: coarsening of the grid (e.g., 2 means calculate with a dx that is 2x input dx) (Default value = 2)
-    :param dxi: fining of the grid (e.g., 0.1 means return spline on a grid that is 10x input dx) (Default value = 1)
-    :returns: Zi - splined version of Zi
+    Args:
+      Zi: the gridded perturbation data (Nx1 or NxM)
+      w: weights for Zi (same shape)
+      splinebctype: 2 - second derivative goes to zero at boundary
+    1 - first derivative goes to zero at boundary
+    0 - value is zero at boundary
+    10 - force value and derivative (first?!?) to zero at boundary (Default value = 0)
+      lc: smoothing constraint value (usually 4) (Default value = 4)
+      dxm: coarsening of the grid (e.g., 2 means calculate with a dx that is 2x input dx) (Default value = 2)
+      dxi: fining of the grid (e.g., 0.1 means return spline on a grid that is 10x input dx) (Default value = 1)
+
+    Returns:
+      Zi - splined version of Zi
 
     """
 
@@ -217,13 +220,16 @@ def bspline_pertgrid(Zi, w, splinebctype=0, lc=4, dxm=2, dxi=1):
 def bspline_compute(x, z, w, xm, dxm, lc, bctype):
     """
 
-    :param x: 
-    :param z: 
-    :param w: 
-    :param xm: 
-    :param dxm: 
-    :param lc: 
-    :param bctype: 
+    Args:
+      x: param z:
+      w: param xm:
+      dxm: param lc:
+      bctype: 
+      z: 
+      xm: 
+      lc: 
+
+    Returns:
 
     """
     # this fits 1D data to a spline, like a boss....
@@ -416,9 +422,12 @@ def bspline_compute(x, z, w, xm, dxm, lc, bctype):
 def bspline_basis(y):
     """
 
-    :param y: the N x 1 independent variable locations
-                y is normalized by dy (grid node spacing) and centered on xm (node of interest)
-    :returns: y - the basis function for x - xm = 0
+    Args:
+      y: the N x 1 independent variable locations
+    y is normalized by dy (grid node spacing) and centered on xm (node of interest)
+
+    Returns:
+      y - the basis function for x - xm = 0
 
     """
 
@@ -446,18 +455,21 @@ def bspline_basis(y):
 def bspline_curve(y, ym, am, dx, bctype, aci=None):
     """
 
-    :param y: the N x 1 locations of interest
-    :param ym: the M x 1 EQUALLY SPACED!!! locations of the basis function
-    :param am: the corresponding basis function amplitudes
-    :param dx: the spacing of grid xm
-    :param bctype: this may either be
-                2 - second derivative vanishes at boundary
-                1 - first derivative vanishes at boundary
-                0 - value is specified at the boundary
-    :param aci: something to do with the errors, if you aren't interested in the errors this doesn't matter (Default value = None)
-    :returns: dictionary containing
-            z - the N x 1 spline values at each yi
-            e - the N x 1 error values at each yi
+    Args:
+      y: the N x 1 locations of interest
+      ym: the M x 1 EQUALLY SPACED!!! locations of the basis function
+      am: the corresponding basis function amplitudes
+      dx: the spacing of grid xm
+      bctype: this may either be
+    2 - second derivative vanishes at boundary
+    1 - first derivative vanishes at boundary
+    0 - value is specified at the boundary
+      aci: something to do with the errors, if you aren't interested in the errors this doesn't matter (Default value = None)
+
+    Returns:
+      dictionary containing
+      z - the N x 1 spline values at each yi
+      e - the N x 1 error values at each yi
 
     """
 
@@ -546,18 +558,21 @@ def bspline_curve(y, ym, am, dx, bctype, aci=None):
 def DLY_bspline(Zi, splinebctype=10, off=None, lc=None):
     """
 
-    :param Zi: elevation DIFFERENCE between the new survey data and the background (it splines back to 0..)
-    :param splinebctype: type of edge spline you want it to do, currently supports
-                        10 - 0 slope at edge and at offset node, 0 value at edge
-                        1 - 0 slope at edge and at offset node, retains original edge value
-                        0 - linear fit slope between 0 at edge and offset node (Default value = 10)
-    :param off: number of nodes you doing the spline over.  so if off = 5, the spline function will be gernerated
-                between the edge and the node 5 nodes away from the edge.  If handed a tuple it assumes
-                the first value is off_x and the second off_y.  If this is None it will skip the edge spline. (Default value = None)
-    :param lc: the smoothing scales for the big spline of the entire dataset at the end (rather than just the ends).
-                If this is None it will skip the big spline (Default value = None)
-    :returns: Modified Zn based on input parameters.
-            Note that if off=None AND lc=None, this function will make NO changes to the bathymetry difference!!!
+    Args:
+      Zi: elevation DIFFERENCE between the new survey data and the background (it splines back to 0..)
+      splinebctype: type of edge spline you want it to do, currently supports
+    10 - 0 slope at edge and at offset node, 0 value at edge
+    1 - 0 slope at edge and at offset node, retains original edge value
+    0 - linear fit slope between 0 at edge and offset node (Default value = 10)
+      off: number of nodes you doing the spline over.  so if off = 5, the spline function will be gernerated
+    between the edge and the node 5 nodes away from the edge.  If handed a tuple it assumes
+    the first value is off_x and the second off_y.  If this is None it will skip the edge spline. (Default value = None)
+      lc: the smoothing scales for the big spline of the entire dataset at the end (rather than just the ends).
+    If this is None it will skip the big spline (Default value = None)
+
+    Returns:
+      Modified Zn based on input parameters.
+      Note that if off=None AND lc=None, this function will make NO changes to the bathymetry difference!!!
 
     """
 
@@ -654,13 +669,16 @@ def DLY_bspline(Zi, splinebctype=10, off=None, lc=None):
 def edge_spline(Z, splinebctype):
     """
 
-    :param Z: 1D array of elevations (nominally from edge to offset node)
-    :param splinebctype: type of edge spline you want it to do, currently supports
-                        10 - 0 slope at edge and at offset node, 0 value at edge
-                        1 - 0 slope at edge and at offset node, retains original edge value
-                        0 - linear fit slope between 0 at edge and offset node
-    :returns: Zn, new values for the 1d array of elevations based on either a cubic
-            or linear function fit to the first and last points of Z
+    Args:
+      Z: 1D array of elevations (nominally from edge to offset node)
+      splinebctype: type of edge spline you want it to do, currently supports
+    10 - 0 slope at edge and at offset node, 0 value at edge
+    1 - 0 slope at edge and at offset node, retains original edge value
+    0 - linear fit slope between 0 at edge and offset node
+
+    Returns:
+      Zn, new values for the 1d array of elevations based on either a cubic
+      or linear function fit to the first and last points of Z
 
     """
     # this is the little function I wrote just to deal with the edges of my new surface.

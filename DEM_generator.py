@@ -22,32 +22,35 @@ def DEM_generator(dict):
     a new grid with the x0,y0 and x1, y1, lambdaX and lambdaY keys.  This function will import data, subsample data,
     and grid data using scaleCinterp from plant 2002.  This will not incorporate to a background grid.
 
-    :param dict: input dictionary
-     :key x0:    Minimum x-value of the output grid (origin)
-     :key y0:    Minimum y-value of the output grid
-     :key x1:    Maximum x-value of the output grid
-     :key y1:    Maximum y-value of the output grid
-     :key grid_filename:  full filepath of the existing grid (which this will build upon), if it exists
-     :key lambdaY:    grid spacing in the y-direction
-     :key lambdaX:    Grid spacing in the x-direction
-     :key msmoothx:   Smoothing length scale in the x-direction
-     :key msmoothy:   Smoothing length scale in the y-direction
-     :key msmootht:   Smoothing length scale in time
-     :key filtername: Name of the filter type to smooth the data
-                        ['hanning', 'linloess', 'quadloess', 'boxcar', si']
-     :key nmseitol:   Normalized error tolerance the user will tolerate in the final grid
-                        (0 - (no error) to 1 (no removal of bad points))
-     :key xFRF_s:     survey xFRF coordinates
-     :key yFRF_s:     survey yFRF coordinates
-     :key Z_s:        survey bottom elevations
-     :key xFRFi_vec:  x-positions from the full background bathy
-     :key yFRFi_vec:  y-positions from the full background bathy
-     :key Zi:         full background bathymetry elevations
-    :returns: dict with keys
-        :key zi: the depth estimate
-        :key msei: the mean square interpolation error estimate (units of z)
-        :key nmsei: the normalized mean square error
-        :key msri: the mean square residuals
+    Args:
+      dict: input dictionary
+    :key x0:    Minimum x-value of the output grid (origin)
+    :key y0:    Minimum y-value of the output grid
+    :key x1:    Maximum x-value of the output grid
+    :key y1:    Maximum y-value of the output grid
+    :key grid_filename:  full filepath of the existing grid (which this will build upon), if it exists
+    :key lambdaY:    grid spacing in the y-direction
+    :key lambdaX:    Grid spacing in the x-direction
+    :key msmoothx:   Smoothing length scale in the x-direction
+    :key msmoothy:   Smoothing length scale in the y-direction
+    :key msmootht:   Smoothing length scale in time
+    :key filtername: Name of the filter type to smooth the data
+    ['hanning', 'linloess', 'quadloess', 'boxcar', si']
+    :key nmseitol:   Normalized error tolerance the user will tolerate in the final grid
+    (0 - (no error) to 1 (no removal of bad points))
+    :key xFRF_s:     survey xFRF coordinates
+    :key yFRF_s:     survey yFRF coordinates
+    :key Z_s:        survey bottom elevations
+    :key xFRFi_vec:  x-positions from the full background bathy
+    :key yFRFi_vec:  y-positions from the full background bathy
+    :key Zi:         full background bathymetry elevations
+
+    Returns:
+      dict with keys
+      :key zi: the depth estimate
+      :key msei: the mean square interpolation error estimate (units of z)
+      :key nmsei: the normalized mean square error
+      :key msri: the mean square residuals
 
     """
     x0 = dict['x0']             # Minimum x-value of the output grid (origin)
@@ -154,12 +157,15 @@ def makeWBflow(y_grid, Nysmooth, lambdaY):
         (or 1 - Gaussian to be more specific).
     It only splines in the alongshore direction, not cross-shore!
 
-    :param y_grid: 2D grid of y-coordinates (i.e., y meshgrid output)
-    :param Nysmooth: number of smoothing nodes at each y-edge.
-        This is combined with lambdaY to get basically a scaled standard deviation of a Gaussian distribution
-    :param lambdaY: grid spacing in Y.
-        This is combined with Nysmooth to get basically a scaled standard deviation of a Gaussian distribution
-    :returns: wbflow - scaling factors for the bspline weights
+    Args:
+      y_grid: 2D grid of y-coordinates (i.e., y meshgrid output)
+      Nysmooth: number of smoothing nodes at each y-edge.
+    This is combined with lambdaY to get basically a scaled standard deviation of a Gaussian distribution
+      lambdaY: grid spacing in Y.
+    This is combined with Nysmooth to get basically a scaled standard deviation of a Gaussian distribution
+
+    Returns:
+      wbflow - scaling factors for the bspline weights
 
     """
 
@@ -181,12 +187,15 @@ def makeWBflow2D(dict):
     
     for a Tukey filter, a = 0 gives you no scaling (rectangular window), a = 1 gives you a Hann filter (spelling?)
 
-    :param dict: Keys:
-        :key x_grid: 2D x-coordinate grid from Meshgrid
-        :key y_grid: 2D y-coordinate grid from meshgrid
-        :key ax: alpha value for the x-direction tukey filter.
-        :key ay: alpha value for the y-direction tukey filter.
-    :returns: wbflow - scaling factors for the bspline weights
+    Args:
+      dict: Keys:
+    :key x_grid: 2D x-coordinate grid from Meshgrid
+    :key y_grid: 2D y-coordinate grid from meshgrid
+    :key ax: alpha value for the x-direction tukey filter.
+    :key ay: alpha value for the y-direction tukey filter.
+
+    Returns:
+      wbflow - scaling factors for the bspline weights
 
     """
 
