@@ -9,35 +9,36 @@ from supportingMethods import consistentWeight
 
 
 def subsampleData(X, z, e, Dx):
-    """ [Xi,zi, si, ni, Ji, Jmax, X0] = subsampleData(X,z,e,DX);
+    """interpolate data into regular sample bins using boxcar window
     
-     interpolate data into regular sample bins using boxcar window
-    
-     Input
-       X, an NxM set of coordinates
-       z, an Nxr array of observations, where the 2:rth columns are averaged identically to the first column
-       e, an Nx1 array of errors (used to weight sum) (optional)
-          % ONLY APPLIES TO z(:,1), other variables (if exist) weighted by these values
-       DX, an MxN2 array of scale parameters, indicating the step size in each dimension
-         N2 is either 1 (indicating constant smoothing lengthscales, or M, indicating
-         variable lengthscales for each datapoint
+     Args:
+         X: an NxM set of coordinates
+         z: an Nxr array of observations, where the 2:rth columns are averaged identically to the first column
+         e: an Nx1 array of errors (used to weight sum) (optional) ONLY APPLIES TO z(:,1), other variables (if exist)
+             weighted by these values
+         DX: an MxN2 array of scale parameters, indicating the step size in each dimension
+         N2: is either 1 (indicating constant smoothing lengthscales, or M, indicating variable lengthscales
+             for each datapoint
     
      Output
-       Xi, the mean position of the data in each cell
-       zi, the mean value at each interp. cell
-       si, the standard error (=std. dev./sqrt(n)) (or, if ni<3, insert average value of all other si values)
-          ONLY COMPUTED FOR z(:,1), others are weigthed identically
-       ni, the number of observations going into each cell
-       Ji, the array of indices into each cell
-       Jmax, the array of number of cells in each dimension
-       X0, the location of the first grid point (i.e., location at Ji=1)
-          % to make a quick grid of the data:
-          [XX,YY] = meshgrid([1:Jmax(1)]*DX(1)+X0(1),[1:Jmax(2)]*DX(2)+X0(2));
-          ZZ = repmat(nan,Jmax(1),Jmax(2)); % careful, read in flipped
-          EE = ZZ;
-          ZZ(Ji) = zi; ZZ = ZZ'; % flip to usual orientation for matlab
-          EE(Ji) = si; EE = EE'; 
-          pcolor(XX,YY,ZZ);
+       Xi: the mean position of the data in each cell
+       zi: the mean value at each interp. cell
+       si: the standard error (=std. dev./sqrt(n)) (or, if ni<3, insert average value of all other si values)
+           ONLY COMPUTED FOR z(:,1), others are weigthed identically
+       ni: the number of observations going into each cell
+       Ji: the array of indices into each cell
+       Jmax: the array of number of cells in each dimension
+       X0: the location of the first grid point (i.e., location at Ji=1)
+
+     Notes:
+        to make a quick grid of the data:
+            [XX,YY] = meshgrid([1:Jmax(1)]*DX(1)+X0(1),[1:Jmax(2)]*DX(2)+X0(2));
+            ZZ = repmat(nan,Jmax(1),Jmax(2)); % careful, read in flipped
+            EE = ZZ;
+            ZZ(Ji) = zi; ZZ = ZZ'; % flip to usual orientation for matlab
+            EE(Ji) = si; EE = EE';
+            pcolor(XX,YY,ZZ);
+
     """
     
     # allow nans
