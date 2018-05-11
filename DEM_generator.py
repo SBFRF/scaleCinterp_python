@@ -14,42 +14,55 @@ import scipy.io as spio
 from matplotlib import pyplot as plt
 from scipy import signal
 
-
-
 def DEM_generator(dict):
-    """
-    This is a function that takes in data with the below keys, and will generate a cartesian grid if there is not
+    """ This is a function that takes in data with the below keys, and will generate a cartesian grid if there is not
     one already built.  if there is a grid given it will grid to the same locations.  If there is not it will generate
     a new grid with the x0,y0 and x1, y1, lambdaX and lambdaY keys.  This function will import data, subsample data,
     and grid data using scaleCinterp from plant 2002.  This will not incorporate to a background grid.
 
-    :param dict: input dictionary
-     :key x0:    Minimum x-value of the output grid (origin)
-     :key y0:    Minimum y-value of the output grid
-     :key x1:    Maximum x-value of the output grid
-     :key y1:    Maximum y-value of the output grid
-     :key grid_filename:  full filepath of the existing grid (which this will build upon), if it exists
-     :key lambdaY:    grid spacing in the y-direction
-     :key lambdaX:    Grid spacing in the x-direction
-     :key msmoothx:   Smoothing length scale in the x-direction
-     :key msmoothy:   Smoothing length scale in the y-direction
-     :key msmootht:   Smoothing length scale in time
-     :key filtername: Name of the filter type to smooth the data
-                        ['hanning', 'linloess', 'quadloess', 'boxcar', si']
-     :key nmseitol:   Normalized error tolerance the user will tolerate in the final grid
-                        (0 - (no error) to 1 (no removal of bad points))
-     :key xFRF_s:     survey xFRF coordinates
-     :key yFRF_s:     survey yFRF coordinates
-     :key Z_s:        survey bottom elevations
-     :key xFRFi_vec:  x-positions from the full background bathy
-     :key yFRFi_vec:  y-positions from the full background bathy
-     :key Zi:         full background bathymetry elevations
+    Args: dict (dict): input dictionary with below keys
+        'x0':              # Minimum x-value of the output grid (origin)
 
-    :return: dict with keys
-        :key zi: the depth estimate
-        :key msei: the mean square interpolation error estimate (units of z)
-        :key nmsei: the normalized mean square error
-        :key msri: the mean square residuals
+        'y0':              # Minimum y-value of the output grid
+
+        'x1':              # Maximum x-value of the output grid
+
+        'y1':              # Maximum y-value of the output grid
+
+        'grid_filename':   # full filepath of the existing grid (which this will build upon), if it exists
+
+        'lambdaY':         # grid spacing in the y-direction
+
+        'lambdaX':         # Grid spacing in the x-direction
+
+        'msmoothx':        # Smoothing length scale in the x-direction
+
+        'msmoothy':        # Smoothing length scale in the y-direction
+
+        'msmootht':        # Smoothing length scale in time
+
+        'filtername':      # Name of the filter type to smooth the data
+                           #      ['hanning', 'linloess', 'quadloess', 'boxcar', si']
+
+        'nmseitol':        # Normalized error tolerance the user will tolerate in the final grid
+                           #      (0 - (no error) to 1 (no removal of bad points))
+
+        'xFRF_s':          # survey xFRF coordinates
+
+        'yFRF_s':          # survey yFRF coordinates
+
+        'Z_s':             # survey bottom elevations
+
+    Returns:
+      dict with keys
+        'zi': the depth estimate
+
+        'msei': the mean square interpolation error estimate (units of z)
+
+        'nmsei': the normalized mean square error
+
+        'msri': the mean square residuals
+
     """
     x0 = dict['x0']             # Minimum x-value of the output grid (origin)
     y0 = dict['y0']             # Minimum y-value of the output grid

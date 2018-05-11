@@ -4,14 +4,12 @@ Created on Mon Jun 30 15:32:36 2014
 
 @author: szthompson
 """
-
 import scipy.io as sio
 import numpy as np
 import netCDF4 as nc
 import pyproj
 
 """ BUILD #1: """
-
 
 def readInDataSet(filename):
     dataX, dataY, dataZ = [], [], []
@@ -101,19 +99,23 @@ def readInDataSet(filename):
 
     return dataX, dataY, dataZ
 
-
 def dataBuilder(filelist, data_coord_check, EPSG=26918):
     """
     this function reads the measured data sets and converts to UTM (assumed Longitude, latitude)
 
     This function assumes UTM zone 18N at the FRF in NAD83
 
-    :param filelist: list of files that has single time step of bathymetry measurements
+    Args:
+        filelist: list of files that has single time step of bathymetry measurements
 
-    :param data_coord_check:
+        data_coord_check:
 
-    :param EPSG:  EPSG code used for tranlating Latitude/longitude to UTM ( assumed FRF) UTM zone 18 N
-    :return:
+        EPSG:  EPSG code used for tranlating Latitude/longitude to UTM ( assumed FRF) UTM zone 18 N
+
+    Returns:
+        x:
+        z:
+
     """
     tempX, tempY, tempZ = [], [], []
     for files in filelist:
@@ -131,7 +133,6 @@ def dataBuilder(filelist, data_coord_check, EPSG=26918):
         x = np.array([xutm, yutm, np.zeros(xutm.size)]).T
 
     return x, z
-
 
 # load NOAA DEM
 def loadNOAAdem(filename, x0, x1, y0, y1):
@@ -156,9 +157,8 @@ def loadNOAAdem(filename, x0, x1, y0, y1):
 
     return Xprior, Yprior, Zprior
 
-
 def gridBuilder(x0, x1, y0, y1, dx, dy, grid_coord_check, grid_filename, EPSG=26918):
-     if (grid_filename.strip() == ''):  # if there's no grid filename
+    if (grid_filename.strip() == ''):  # if there's no grid filename
         # build grid in UTM using dx dy, and 2 corners of grid(x0, y0)
         if (grid_coord_check.strip() == 'LL'):
             # must convert to UTM (meters)

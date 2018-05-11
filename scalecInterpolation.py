@@ -4,38 +4,39 @@ import numpy as np
 from supportingMethods import consistentWeight
 from scipy import interpolate
 
-
 def scalecInterpPerturbations(x, z, s, xi, lx, filtername, nmseitol, Ntotal, Ndone):
-    """
-     DOES NOT REMOVE A POLYNOMIAL TREND, AS TREND IS ASSUMED ALREADY REMOVED FROM
+    """DOES NOT REMOVE A POLYNOMIAL TREND, AS TREND IS ASSUMED ALREADY REMOVED FROM
      PERTURBATION DATA, DEFAULTS TO ZERO VALUE IF NO DATA
+    
+     Args:
+         x: the nxm location of the data- repeated indices not handled well (ignored)
+         z: the observations MINUS a TREND surface
+         s: the the observation errors (i.e., standard deviations, rms, etc.)
+             s is used to weight the observations as 1/s
+             choose s=0 if no information is available about the weights
 
-     Input
-       x, the nxm location of the data- repeated indices not handled well (ignored)
-       z, the observations MINUS a TREND surface
-       s, the the observation errors (i.e., standard deviations, rms, etc.)
-          s is used to weight the observations as 1/s
-          choose s=0 if no information is available about the weights
-       xi, the interpolation locations
-       lx, the interpolation weighting length scales
-       filtername, the name of a filter to analyze:
-          'quadloess'
-          'linloess'
-          'hanning'
-          'boxcar'
-       nmseitol, a maximum error level, if exceeded causes doubling of smoothing scales
-           NOTE: if nmseitol=1 then this means we accept result with input scales
-                 if nmseitol<1 then this means interpolation will successive doubling of scales to reach desired noise reduction
-       Ntotal, the total number of interpolated points being processed (e.g., larger than N if doing tiles)
-       Ndone, the total number of interpolated points already processed (e.g., number done in previous tiles)
-       HWAITBAR, handle to waitbar
+         xi: the interpolation locations
+         lx: the interpolation weighting length scales
+         filtername: the name of a filter to analyze:
+             'quadloess'
+             'linloess'
+             'hanning'
+             'boxcar'
+
+         nmseitol: a maximum error level, if exceeded causes doubling of smoothing scales
+               NOTE: if nmseitol=1 then this means we accept result with input scales
+                     if nmseitol<1 then this means interpolation will successive doubling of scales to reach desired noise reduction
+
+         Ntotal: the total number of interpolated points being processed (e.g., larger than N if doing tiles)
+         Ndone: the total number of interpolated points already processed (e.g., number done in previous tiles)
+
 
      Output
-       zi, the estimate
-       msei, the mean square interpolation error estimate (units of z)
-       nmsei, the normalized mean square error
-       msri, the mean square residuals
-       HWAITBAR, the waitbar handle
+       zi: the estimate
+       msei: the mean square interpolation error estimate (units of z)
+       nmsei: the normalized mean square error
+       msri: the mean square residuals
+
     """
     # deal with input
     N, m = np.shape(x)
@@ -221,36 +222,30 @@ def scalecInterpPerturbations(x, z, s, xi, lx, filtername, nmseitol, Ntotal, Ndo
 
 
 def scalecInterp(x, z, s, xi, lx, filtername, nmseitol):
-    """
-    Created on Wed Jul 23 14:32:36 2014
-    [zi, msei, nmsei, msri] = scalecInterp(x, z, s, xi, lx, filtername, nmseitol, WB);
+    """This is a stand-alone general purpose interpolator.
+     It remvoes a linear (or planar) trend first and then calls scalecInterpPerturbations 
+    
+     Args:
+         x: the nxm location of the data- repeated indices not handled well (ignored)
+         z: the observations
+         s: the the observation errors (i.e., standard deviations, rms, etc.) s is used to weight the observations as 1/s
+             choose s=0 if no information is available about the weights
 
-     This is a stand-alone general purpose interpolator.
-     It remvoes a linear (or planar) trend first and then calls scalecInterpPerturbations
+         xi: the interpolation locations
+         lx: the interpolation weighting length scales
+         filtername: the name of a filter to analyze: ['quadloess', 'linloess',  'hanning', 'boxcar']
 
-     Input
-       x, the nxm location of the data- repeated indices not handled well (ignored)
-       z, the observations
-       s, the the observation errors (i.e., standard deviations, rms, etc.)
-          s is used to weight the observations as 1/s
-          choose s=0 if no information is available about the weights
-       xi, the interpolation locations
-       lx, the interpolation weighting length scales
-       filtername, the name of a filter to analyze:
-          'quadloess'
-          'linloess'
-          'hanning'
-          'boxcar'
-       nmseitol, a maximum error level, if exceeded causes doubling of smoothing scales
-           NOTE: if nmseitol=1 then this means we accept result with input scales
+         nmseitol: a maximum error level, if exceeded causes doubling of smoothing scales
+             NOTE: if nmseitol=1 then this means we accept result with input scales
                  if nmseitol<1 then this means interpolation will successive doubling of scales to reach desired noise reduction
-       WB, a flag to use the waitbar to show progress. WB=1 will show waitbar, missing,empty, or other value won't
 
-     Output
-       zi, the estimate
-       msei, the mean square interpolation error estimate (units of z)
-       nmsei, the normalized mean square error
-       msri, the mean square residuals
+
+     Returns
+       zi: the estimate
+       msei: the mean square interpolation error estimate (units of z)
+       nmsei: the normalized mean square error
+       msri: the mean square residuals
+
     """
     # fix up input data
     Ni, mi = np.shape(xi)
@@ -341,45 +336,41 @@ def scalecInterp(x, z, s, xi, lx, filtername, nmseitol):
     return zi, msei, nmsei, msri
 
 def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
-    """
-     [ZI, MSEI, NMSEI, MSRI] = scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol, WB);
-
-     optimize interpolation for regular grid output by breaking into bite-sized tiles
+    """optimize interpolation for regular grid output by breaking into bite-sized tiles
      which are passed to scalecInterpPerturbations (which does not remove any trend)
+    
+     Args:
+         x: the nxm location of the observation data- repeated indices not handled well (ignored)
+         z: the observations
+         s; the the observation errors (i.e., standard deviations, rms, etc.)
+             s is used to weight the observations as 1/s
+             choose s=0 if no information is available about the weights
 
-     Input
-       x, the nxm location of the observation data- repeated indices not handled well (ignored)
-       z, the observations
-       s, the the observation errors (i.e., standard deviations, rms, etc.)
-          s is used to weight the observations as 1/s
-          choose s=0 if no information is available about the weights
-       xi, the interpolation locations
-       lx, the interpolation weighting length scales
-       filtername, the name of a filter to analyze:
-          'quadloess'
-          'linloess'
-          'hanning'
-          'boxcar'
-       nmseitol, a maximum error level, if exceeded causes doubling of smoothing scales
+         xi: the interpolation locations
+         lx: the interpolation weighting length scales
+         filtername: the name of a filter to analyze:
+            'quadloess'
+            'linloess'
+            'hanning'
+            'boxcar'
+
+         nmseitol: a maximum error level, if exceeded causes doubling of smoothing scales
            NOTE: if nmseitol=1 then this means we accept result with input scales
                  if nmseitol<1 then this means interpolation will successive doubling of scales to reach desired noise reduction
-       WB, a flag to use the waitbar to show progress. WB=1 will show waitbar, missing,empty, or other value won't
 
-     Output
-       zi, the estimate
-       msei, the mean square interpolation error estimate (units of z)
-       nmsei, the normalized mean square error
-       msri, the mean square residuals
+     Returns
+         zi: the estimate
+         msei: the mean square interpolation error estimate (units of z)
+         nmsei: the normalized mean square error
+         msri: the mean square residuals
 
      change log
      12 Feb 2009, NGP,  disabled the figure display so large regions don't croak
     """
-
     if np.shape(lx) == np.shape(xi):
         lx_tog = 1
     else:
         lx_tog = 0
-
 
     # check dimensions
     Ni, mi = np.shape(xi)
@@ -618,8 +609,6 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
                     Ndone = Ndone + len(idyi) * len(idxi)
                     del tmp1, tmp2
 
-    # print 'interpolated ', np.fix(nyi*nxi/(etime(tend,tstart))) ,' points per second (tiled) \n'
-
     # return output in cols
     ZI    = ZI.flatten(1)
     MSEI  = MSEI.flatten(1)
@@ -635,36 +624,35 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     return ZI, MSEI, NMSEI, MSRI
 
 def scalecInterpTile(x, z, s, xi, lx, filtername, nmseitol):
-    """
-     [ZI, MSEI, NMSEI, MSRI] = scalecInterpTile(x, z, s, xi, lx, filtername, nmseitol,WB);
+    """ remove a plane-trend and pass to scalecInterpTilePerturbations (which does not remove any trend)
+     
+     Args
+       x: the nxm location of the data- repeated indices not handled well (ignored)
+       z: the observations
+       s: the the observation errors (i.e., standard deviations, rms, etc.) s is used to weight the observations as 1/s
+           choose s=0 if no information is available about the weights
 
-     remove a plane-trend and pass to scalecInterpTilePerturbations (which does not remove any trend)
+       xi: the interpolation locations
+       lx: the interpolation weighting length scales
+       filtername: the name of a filter to analyze:
+           'quadloess'
+           'linloess'
+           'hanning'
+           'boxcar'
 
-     Input
-       x, the nxm location of the data- repeated indices not handled well (ignored)
-       z, the observations
-       s, the the observation errors (i.e., standard deviations, rms, etc.)
-          s is used to weight the observations as 1/s
-          choose s=0 if no information is available about the weights
-       xi, the interpolation locations
-       lx, the interpolation weighting length scales
-       filtername, the name of a filter to analyze:
-          'quadloess'
-          'linloess'
-          'hanning'
-          'boxcar'
-       nmseitol, a maximum error level, if exceeded causes doubling of smoothing scales
-           NOTE: if nmseitol=1 then this means we accept result with input scales
+       nmseitol: a maximum error level, if exceeded causes doubling of smoothing scales
+           NOTE: if nmseitol=1 then th    is means we accept result with input scales
                  if nmseitol<1 then this means interpolation will successive doubling of scales to reach desired noise reduction
-       WB, a flag to use the waitbar to show progress. WB=1 will show waitbar, missing,empty, or other value won't
 
-     Output
-       zi, the estimate
-       msei, the mean square interpolation error estimate (units of z)
-       nmsei, the normalized mean square error
-       msri, the mean square residuals
-
+     
+     Returns:
+       zi: the estimate
+       msei: the mean square interpolation error estimate (units of z)
+       nmsei: the normalized mean square error
+       msri: the mean square residuals
+    
      modifications by updating the trend only where valid perturbations were interpolated
+
     """
     # catch  input
     Ni, mi = np.shape(xi)
