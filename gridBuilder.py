@@ -4,7 +4,6 @@ Created on Mon Jun 30 15:32:36 2014
 
 @author: szthompson
 """
-
 import scipy.io as sio
 import numpy as np
 import netCDF4 as nc
@@ -14,6 +13,14 @@ import pyproj
 
 
 def readInDataSet(filename):
+    """
+
+    Args:
+      filename: 
+
+    Returns:
+
+    """
     dataX, dataY, dataZ = [], [], []
     # Handle NetCDF files
     if filename.endswith('nc'):
@@ -103,17 +110,17 @@ def readInDataSet(filename):
 
 
 def dataBuilder(filelist, data_coord_check, EPSG=26918):
-    """
-    this function reads the measured data sets and converts to UTM (assumed Longitude, latitude)
-
+    """this function reads the measured data sets and converts to UTM (assumed Longitude, latitude)
+    
     This function assumes UTM zone 18N at the FRF in NAD83
 
-    :param filelist: list of files that has single time step of bathymetry measurements
+    Args:
+      filelist: list of files that has single time step of bathymetry measurements
+      data_coord_check: param EPSG:  EPSG code used for tranlating Latitude/longitude to UTM ( assumed FRF) UTM zone 18 N
+      EPSG: Default value = 26918)
 
-    :param data_coord_check:
+    Returns:
 
-    :param EPSG:  EPSG code used for tranlating Latitude/longitude to UTM ( assumed FRF) UTM zone 18 N
-    :return:
     """
     tempX, tempY, tempZ = [], [], []
     for files in filelist:
@@ -135,6 +142,18 @@ def dataBuilder(filelist, data_coord_check, EPSG=26918):
 
 # load NOAA DEM
 def loadNOAAdem(filename, x0, x1, y0, y1):
+    """
+
+    Args:
+      filename: param x0:
+      x1: param y0:
+      y1: 
+      x0: 
+      y0: 
+
+    Returns:
+
+    """
     from scipy.io import netcdf
     f = netcdf.netcdf_file(filename, 'r')
     xtmp = f.variables['x'][:]
@@ -158,7 +177,24 @@ def loadNOAAdem(filename, x0, x1, y0, y1):
 
 
 def gridBuilder(x0, x1, y0, y1, dx, dy, grid_coord_check, grid_filename, EPSG=26918):
-     if (grid_filename.strip() == ''):  # if there's no grid filename
+    """
+
+    Args:
+      x0: origin in x
+      x1: other corner in x
+      y0: origin in y
+      y1: other cordner in y
+      dx: cell spacing in x
+      dy: cell spacing in y
+      grid_coord_check: param grid_filename: file name for grid
+      EPSG: standardized grid (Default value = 26918)
+      grid_filename: returns: xgrid, ygrid
+
+    Returns:
+      xgrid, ygrid
+
+    """
+    if (grid_filename.strip() == ''):  # if there's no grid filename
         # build grid in UTM using dx dy, and 2 corners of grid(x0, y0)
         if (grid_coord_check.strip() == 'LL'):
             # must convert to UTM (meters)

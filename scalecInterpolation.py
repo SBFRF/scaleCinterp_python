@@ -6,10 +6,9 @@ from scipy import interpolate
 
 
 def scalecInterpPerturbations(x, z, s, xi, lx, filtername, nmseitol, Ntotal, Ndone):
-    """
-     DOES NOT REMOVE A POLYNOMIAL TREND, AS TREND IS ASSUMED ALREADY REMOVED FROM
+    """DOES NOT REMOVE A POLYNOMIAL TREND, AS TREND IS ASSUMED ALREADY REMOVED FROM
      PERTURBATION DATA, DEFAULTS TO ZERO VALUE IF NO DATA
-
+    
      Input
        x, the nxm location of the data- repeated indices not handled well (ignored)
        z, the observations MINUS a TREND surface
@@ -29,13 +28,27 @@ def scalecInterpPerturbations(x, z, s, xi, lx, filtername, nmseitol, Ntotal, Ndo
        Ntotal, the total number of interpolated points being processed (e.g., larger than N if doing tiles)
        Ndone, the total number of interpolated points already processed (e.g., number done in previous tiles)
        HWAITBAR, handle to waitbar
-
+    
      Output
        zi, the estimate
        msei, the mean square interpolation error estimate (units of z)
        nmsei, the normalized mean square error
        msri, the mean square residuals
        HWAITBAR, the waitbar handle
+
+    Args:
+      x: param z:
+      s: param xi:
+      lx: param filtername:
+      nmseitol: param Ntotal:
+      Ndone: 
+      z: 
+      xi: 
+      filtername: 
+      Ntotal: 
+
+    Returns:
+
     """
     # deal with input
     N, m = np.shape(x)
@@ -126,21 +139,12 @@ def scalecInterpPerturbations(x, z, s, xi, lx, filtername, nmseitol, Ntotal, Ndo
     msei = np.ones((Ni,1), float)
     msri = np.ones((Ni,1), float)
 
-    # Scale the data for interpolation -- this part was missing from original - added by SB 7/21/17
-    # why was this commented out - Meg does it in her script?
-    """
-    if lx.shape[-1] == m:
-         print 'using constant smoothing scales'
-         L = np.diag(1./lx)
-         x = np.dot(x, L)
-         xi = np.dot(xi, L)
-    """
-
+    # Scale the data for interpolation
 
     for i in xrange(0, Ni):
         # center on point of interest
         y = x - (np.ones((N, 1), float) * xi[i, :])
-
+        raise NotImplementedError('Check your smoothing uni/bi directional')
         # now scale if using individual smoothing scales
         if (len(lx) == m):
             # constant scale obs. and interp. locations
@@ -230,13 +234,12 @@ def scalecInterpPerturbations(x, z, s, xi, lx, filtername, nmseitol, Ntotal, Ndo
 
 
 def scalecInterp(x, z, s, xi, lx, filtername, nmseitol):
-    """
-    Created on Wed Jul 23 14:32:36 2014
+    """Created on Wed Jul 23 14:32:36 2014
     [zi, msei, nmsei, msri] = scalecInterp(x, z, s, xi, lx, filtername, nmseitol, WB);
-
+    
      This is a stand-alone general purpose interpolator.
      It remvoes a linear (or planar) trend first and then calls scalecInterpPerturbations
-
+    
      Input
        x, the nxm location of the data- repeated indices not handled well (ignored)
        z, the observations
@@ -254,12 +257,24 @@ def scalecInterp(x, z, s, xi, lx, filtername, nmseitol):
            NOTE: if nmseitol=1 then this means we accept result with input scales
                  if nmseitol<1 then this means interpolation will successive doubling of scales to reach desired noise reduction
        WB, a flag to use the waitbar to show progress. WB=1 will show waitbar, missing,empty, or other value won't
-
+    
      Output
        zi, the estimate
        msei, the mean square interpolation error estimate (units of z)
        nmsei, the normalized mean square error
        msri, the mean square residuals
+
+    Args:
+      x: param z:
+      s: param xi:
+      lx: param filtername:
+      nmseitol: 
+      z: 
+      xi: 
+      filtername: 
+
+    Returns:
+
     """
     # fix up input data
     Ni, mi = np.shape(xi)
@@ -350,12 +365,11 @@ def scalecInterp(x, z, s, xi, lx, filtername, nmseitol):
     return zi, msei, nmsei, msri
 
 def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
-    """
-     [ZI, MSEI, NMSEI, MSRI] = scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol, WB);
-
+    """[ZI, MSEI, NMSEI, MSRI] = scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol, WB);
+    
      optimize interpolation for regular grid output by breaking into bite-sized tiles
      which are passed to scalecInterpPerturbations (which does not remove any trend)
-
+    
      Input
        x, the nxm location of the observation data- repeated indices not handled well (ignored)
        z, the observations
@@ -373,15 +387,27 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
            NOTE: if nmseitol=1 then this means we accept result with input scales
                  if nmseitol<1 then this means interpolation will successive doubling of scales to reach desired noise reduction
        WB, a flag to use the waitbar to show progress. WB=1 will show waitbar, missing,empty, or other value won't
-
+    
      Output
        zi, the estimate
        msei, the mean square interpolation error estimate (units of z)
        nmsei, the normalized mean square error
        msri, the mean square residuals
-
+    
      change log
      12 Feb 2009, NGP,  disabled the figure display so large regions don't croak
+
+    Args:
+      x: param z:
+      s: param xi:
+      lx: param filtername:
+      nmseitol: 
+      z: 
+      xi: 
+      filtername: 
+
+    Returns:
+
     """
 
     if np.shape(lx) == np.shape(xi):
@@ -403,14 +429,10 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     idyi = np.squeeze(np.nonzero(xi[:, 0] == xi[0, 0]))  # the head of every x row
     idxi = np.squeeze(np.where(xi[:, 1] == xi[0, 1]))
 
-    # if second occurrance of x(1) coincides with end of occurrances of y(1), suspect gridded data
-    try:
-        if (idyi[1] - 1 == idxi[-1]):
-            print 'gridded output suspected \n'
-    except:
-        # no evidence for grid, must interpolate all at once
+    # if second occurrance of x(1)  does not coincide with end of occurrances of y(1), suspect Not gridded data
+    if (idyi[1] - 1 != idxi[-1]):  # no evidence for grid, must interpolate all at once
         # send to stand-alone interp
-        print 'output not a 2-d grid \n'
+        print 'output not a 2-d grid\n'
         #from scalecInterpolation import scalecInterp
         ZI, MSEI, NMSEI, MSRI = scalecInterp(x, z, s, xi, lx, filtername, nmseitol)
         return ZI, MSEI, NMSEI, MSRI
@@ -498,7 +520,6 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     # add time
     if (mi == 3):
         Ti = Ti * L[2, 2]
-
         # need some consistent weights
     wtol = 0.01
     try:
@@ -538,7 +559,7 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     kx = np.ceil(np.sqrt(kopt))  # proportion to grid dimensions
     ky = np.ceil(kopt / kx)
     kopt = kx * ky
-    ropt = (1 / kopt) + kopt / ((1 + lk) * nxi * nyi)
+    ropt = (1 / kopt) + kopt / np.sqrt((1 + lk) * nxi * nyi)
 
     # divide grid points per tile, roughly
     if (kx == 1):
@@ -556,8 +577,7 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
         if (nky < 1):
             nky = 1
             ky = nyi
-    print 'number of tiles = ', kopt ,', expected efficiency = %.4f' %ropt ,', xi/tile = ', nkx ,', yi/tile = ', nky ,' \n'
-
+    # print 'number of tiles = ', kopt ,', expected efficiency = %.4f' %ropt ,', xi/tile = ', nkx ,', yi/tile = ', nky
     # specify overlap
     if lx_tog:
         Lmax = 10 * np.array([max(lx[:, 0]), max(lx[:, 1])])
@@ -597,10 +617,6 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
                     Xii = Xi[tmp1,tmp2].T
                     Yii = Yi[tmp1,tmp2].T
 
-                    # Xii2 = Xi[idyi[0]:idyi[-1]+1, idxi[0]:idxi[-1]+1]
-                    # Yii2 = Yi[idyi[0]:idyi[-1]+1, idxi[0]:idxi[-1]+1]
-                    # These are equivalent, so that was not the issue...
-
                     # deal with smoothing scales
                     if (lxflag == 'constant'):
                         L = lx
@@ -636,10 +652,7 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
 
                     Ndone = Ndone + len(idyi) * len(idxi)
                     del tmp1, tmp2
-                    # if(etime(clock,tcheck)>60)
-                    #    tcheck = clock
-                    #    print 'progres: completed', Ndone ,' of ', nyi*nxi ,' points \n'
-    # tend = clock# FIND PYTHON EQUIVALENT
+
     # print 'interpolated ', np.fix(nyi*nxi/(etime(tend,tstart))) ,' points per second (tiled) \n'
 
     # return output in cols
@@ -648,7 +661,7 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     NMSEI = NMSEI.flatten(1)
     MSRI  = MSRI.flatten(1)
 
-    # fix up error too - SB redone-- ask asked by original comments
+    # fix up error too - SB redone-- asked by original comments
     idd = np.argwhere(MSEI.mask == True).squeeze()
     if (np.size(idd) > 0):
         MSEI[idd] = var_z + np.mean(s**2)
@@ -657,11 +670,10 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
     return ZI, MSEI, NMSEI, MSRI
 
 def scalecInterpTile(x, z, s, xi, lx, filtername, nmseitol):
-    """
-     [ZI, MSEI, NMSEI, MSRI] = scalecInterpTile(x, z, s, xi, lx, filtername, nmseitol,WB);
-
+    """[ZI, MSEI, NMSEI, MSRI] = scalecInterpTile(x, z, s, xi, lx, filtername, nmseitol,WB);
+    
      remove a plane-trend and pass to scalecInterpTilePerturbations (which does not remove any trend)
-
+    
      Input
        x, the nxm location of the data- repeated indices not handled well (ignored)
        z, the observations
@@ -679,14 +691,26 @@ def scalecInterpTile(x, z, s, xi, lx, filtername, nmseitol):
            NOTE: if nmseitol=1 then this means we accept result with input scales
                  if nmseitol<1 then this means interpolation will successive doubling of scales to reach desired noise reduction
        WB, a flag to use the waitbar to show progress. WB=1 will show waitbar, missing,empty, or other value won't
-
+    
      Output
        zi, the estimate
        msei, the mean square interpolation error estimate (units of z)
        nmsei, the normalized mean square error
        msri, the mean square residuals
-
+    
      modifications by updating the trend only where valid perturbations were interpolated
+
+    Args:
+      x: param z:
+      s: param xi:
+      lx: param filtername:
+      nmseitol: 
+      z: 
+      xi: 
+      filtername: 
+
+    Returns:
+
     """
     # catch  input
     Ni, mi = np.shape(xi)

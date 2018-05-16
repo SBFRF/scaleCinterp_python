@@ -17,49 +17,46 @@ from scipy import signal
 
 
 def DEM_generator(dict):
-    """
-    This is a function that takes in data with the below keys, and will generate a cartesian grid if there is not
+    """This is a function that takes in data with the below keys, and will generate a cartesian grid if there is not
     one already built.  if there is a grid given it will grid to the same locations.  If there is not it will generate
     a new grid with the x0,y0 and x1, y1, lambdaX and lambdaY keys.  This function will import data, subsample data,
     and grid data using scaleCinterp from plant 2002.  This will not incorporate to a background grid.
 
-    :param dict:
-    x0                          # Minimum x-value of the output grid (origin)
-    y0                          # Minimum y-value of the output grid
-    x1                          # Maximum x-value of the output grid
-    y1                          # Maximum y-value of the output grid
-    grid_filename               # full filepath of the existing grid (which this will build upon), if it exists
-    lambdaY                     # grid spacing in the y-direction
-    lambdaX                     # Grid spacing in the x-direction
-    msmoothx                    # Smoothing length scale in the x-direction
-    msmoothy                    # Smoothing length scale in the y-direction
-    msmootht                    # Smoothing length scale in time
-    filtername                  # Name of the filter type to smooth the data
-                                #      ['hanning', 'linloess', 'quadloess', 'boxcar', si']
-    nmseitol                    # Normalized error tolerance the user will tolerate in the final grid
-                                #      (0 - (no error) to 1 (no removal of bad points))
-    xFRF_s                      # survey xFRF coordinates
-    yFRF_s                      # survey yFRF coordinates
-    Z_s                         # survey bottom elevations
+    Args:
+      dict: input dictionary
+    :key x0:    Minimum x-value of the output grid (origin)
+    :key y0:    Minimum y-value of the output grid
+    :key x1:    Maximum x-value of the output grid
+    :key y1:    Maximum y-value of the output grid
+    :key grid_filename:  full filepath of the existing grid (which this will build upon), if it exists
+    :key lambdaY:    grid spacing in the y-direction
+    :key lambdaX:    Grid spacing in the x-direction
+    :key msmoothx:   Smoothing length scale in the x-direction
+    :key msmoothy:   Smoothing length scale in the y-direction
+    :key msmootht:   Smoothing length scale in time
+    :key filtername: Name of the filter type to smooth the data
+    ['hanning', 'linloess', 'quadloess', 'boxcar', si']
+    :key nmseitol:   Normalized error tolerance the user will tolerate in the final grid
+    (0 - (no error) to 1 (no removal of bad points))
+    :key xFRF_s:     survey xFRF coordinates
+    :key yFRF_s:     survey yFRF coordinates
+    :key Z_s:        survey bottom elevations
+    :key xFRFi_vec:  x-positions from the full background bathy
+    :key yFRFi_vec:  y-positions from the full background bathy
+    :key Zi:         full background bathymetry elevations
 
-    xFRFi_vec                   # x-positions from the full background bathy
-    yFRFi_vec                   # y-positions from the full background bathy
-    Zi                          # full background bathymetry elevations
+    Returns:
+      dict with keys
+      :key zi: the depth estimate
+      :key msei: the mean square interpolation error estimate (units of z)
+      :key nmsei: the normalized mean square error
+      :key msri: the mean square residuals
 
-    :return: dict with keys:
-        zi, the depth estimate
-        msei, the mean square interpolation error estimate (units of z)
-        nmsei, the normalized mean square error
-        msri, the mean square residuals
     """
     x0 = dict['x0']             # Minimum x-value of the output grid (origin)
     y0 = dict['y0']             # Minimum y-value of the output grid
     x1 = dict['x1']             # Maximum x-value of the output grid
     y1 = dict['y1']             # Maximum y-value of the output grid
-    try:
-        grid_filename = dict['grid_filename']
-    except:
-        pass
     lambdaY = dict['lambdaY']        # grid spacing in the y-direction
     lambdaX = dict['lambdaX']        # Grid spacing in the x-direction
     msmoothx = dict['msmoothx']      # Smoothing length scale in the x-direction
@@ -69,19 +66,9 @@ def DEM_generator(dict):
                                      #      ['hanning', 'linloess', 'quadloess', 'boxcar', si']
     nmseitol = dict['nmseitol']      # Normalized error tolerance the user will tolerate in the final grid
                                      #      (0 - (no error) to 1 (no removal of bad points))
-
     xFRF_s = dict['xFRF_s']          # survey xFRF coordinates
     yFRF_s = dict['yFRF_s']          # survey yFRF coordinates
     Z_s = dict['Z_s']                # survey bottom elevations
-
-    """
-    xFRFi_vec = dict['xFRFi_vec']   # x-positions from the full background bathy
-    yFRFi_vec = dict['yFRFi_vec']   # y-positions from the full background bathy
-    Zi = dict['Zi']                 # full background bathymetry elevations
-    """
-
-
-
 
     #### data checks ###########3
     filters = ['hanning', 'linloess', 'quadloess', 'boxcar', 'si']
@@ -89,18 +76,14 @@ def DEM_generator(dict):
     assert xFRF_s.shape == Z_s.shape and yFRF_s.shape == Z_s.shape, 'DEM GENERATOR data input data must be all the same shape, 1D linear'
 
     ####################################################################
-    # ############################### Load Data ########################
+    ################################# Load Data ########################
     ####################################################################
     t = DT.datetime.now()
     # I use my dictionary instead of the dataBuilder function from plant's code !!!!!
     # x, z = dataBuilder(filelist, data_coord_check='FRF')
     x = np.array([xFRF_s, yFRF_s, np.zeros(xFRF_s.size)]).T
-
-
     z = Z_s[:, np.newaxis]
-
     s = np.zeros((np.size(x[:,1]),1))    # TODO estimate measurement error from the crab and incorporate to scripts
-
     print 'loading time is %s seconds' % (DT.datetime.now() - t)
     assert x.shape[0] > 1, 'Data Did not Load!'
     ####################################################################
@@ -109,19 +92,8 @@ def DEM_generator(dict):
     x_grid, y_grid = gridBuilder(x0, x1, y0, y1, lambdaX, lambdaY, dict['grid_coord_check'], dict['grid_filename'])
     t_grid = np.zeros_like((x_grid))  # Interpolate in time -- Not Developed Yet, but place holder there
 
-    """
-    # here is where we cut out the data from the original grid.
-    x1 = np.where(xFRFi_vec == min(x_grid[0,:]))[0][0]
-    x2 = np.where(xFRFi_vec == max(x_grid[0,:]))[0][0]
-    y1 = np.where(yFRFi_vec == min(y_grid[:,1]))[0][0]
-    y2 = np.where(yFRFi_vec == max(y_grid[:,1]))[0][0]
-    Zi_s = Zi[y1:y2 + 1, x1:x2 + 1]
-    """
-
     # this is what Spike had... it is NOT identical to what the Matlab script passes to scalecInterpTilePerturbations
     xi = np.array([x_grid.flatten(), y_grid.flatten(), t_grid.flatten()]).T  # grid locations, flatten make row-major style
-
-
     # now make smoothing array same shape as  xi
     xsm = msmoothx*np.ones_like(x_grid)
     ysm = msmoothy*np.ones_like(y_grid)
@@ -138,9 +110,10 @@ def DEM_generator(dict):
     #####################################################################
 
     DXsmooth = np.array([msmoothx, msmoothy, msmootht])/4
-    DXsmooth[2] = 1  # this hard codes a time smoothing of 1 (units unclear?)
+    DXsmooth[2] = 1  # this hard codes a time smoothing of 1 for subsampling of data
     t = DT.datetime.now()
     Xi, zprime, si = subsampleData(x, z, s, DXsmooth)
+    print 'subsampling time is %s seconds' % (DT.datetime.now() - t)
 
     # a plot to compare original data to subsampled data
     # from matplotlib import pyplot as plt
@@ -155,23 +128,12 @@ def DEM_generator(dict):
     # plt.legend()
     # plt.close()
 
-
-
-    # What's returned here
-    print 'subsampling time is %s seconds' % (DT.datetime.now() - t)
-
-
-
-    #####################################################################
+    ##############################################################
     # Send it all into scalecinterpolation  -  Here is where the interpolation takes place
     #####################################################################
     t = DT.datetime.now()
-    print 'Interpolating'
-    # zi, msei, nmsei, msri = scalecInterpTilePerturbations(Xi, zprime_pert, si, xi, lx, filtername, nmseitol)
     zi, msei, nmsei, msri = scalecInterpTilePerturbations(Xi, zprime, si, xi, lx, filtername, nmseitol)
     print 'Interpolating time is %s seconds' % (DT.datetime.now() - t)
-
-
 
     # reshape
     zi = np.reshape(zi, (M, N)).T           # zi, the estimate
@@ -190,19 +152,21 @@ def DEM_generator(dict):
     return out
 
 def makeWBflow(y_grid, Nysmooth, lambdaY):
-    """
-    This is the weight scaling script that Nathanial and Meg use.
+    """This is the weight scaling script that Nathanial and Meg use.
     Looks like it uses a Gaussian function at each edge as the weight scaling factor
         (or 1 - Gaussian to be more specific).
     It only splines in the alongshore direction, not cross-shore!
 
-    :param y_grid: 2D grid of y-coordinates (i.e., y meshgrid output)
-    :param Nysmooth: number of smoothing nodes at each y-edge.
-        This is combined with lambdaY to get basically a scaled standard deviation of a Gaussian distribution
-    :param lambdaY: grid spacing in Y.
-        This is combined with Nysmooth to get basically a scaled standard deviation of a Gaussian distribution
-    :return:
-        wbflow - scaling factors for the bspline weights
+    Args:
+      y_grid: 2D grid of y-coordinates (i.e., y meshgrid output)
+      Nysmooth: number of smoothing nodes at each y-edge.
+    This is combined with lambdaY to get basically a scaled standard deviation of a Gaussian distribution
+      lambdaY: grid spacing in Y.
+    This is combined with Nysmooth to get basically a scaled standard deviation of a Gaussian distribution
+
+    Returns:
+      wbflow - scaling factors for the bspline weights
+
     """
 
 
@@ -217,21 +181,22 @@ def makeWBflow(y_grid, Nysmooth, lambdaY):
     return wbflow
 
 def makeWBflow2D(dict):
-    """
-    This is the weight edge scaling function that I developed that works in 2D.
+    """This is the weight edge scaling function that I developed that works in 2D.
     It uses two 1D tukey filters combined together using an outer product to get the edge scaling.
     ax and ay are the parameters of the cross-shore and alongshore edge scaling factors.
-
+    
     for a Tukey filter, a = 0 gives you no scaling (rectangular window), a = 1 gives you a Hann filter (spelling?)
 
-    :param dict:
-        Keys:
-        x_grid: 2D x-coordinate grid from Meshgrid
-        y_grid: 2D y-coordinate grid from meshgrid
-        ax: alpha value for the x-direction tukey filter.
-        ay: alpha value for the y-direction tukey filter.
-    :return:
-        wbflow - scaling factors for the bspline weights
+    Args:
+      dict: Keys:
+    :key x_grid: 2D x-coordinate grid from Meshgrid
+    :key y_grid: 2D y-coordinate grid from meshgrid
+    :key ax: alpha value for the x-direction tukey filter.
+    :key ay: alpha value for the y-direction tukey filter.
+
+    Returns:
+      wbflow - scaling factors for the bspline weights
+
     """
 
     x_grid = dict['x_grid']

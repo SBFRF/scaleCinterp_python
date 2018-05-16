@@ -12,10 +12,14 @@ import pyproj
 
 """ BUILD #1: """ 
 def readInDataSet(filename):
-    """
-    This function opens a file of various types and puts data into 3 columar variables
-    :param filename:
-    :return: x, y, z (1 d array of observation data)
+    """This function opens a file of various types and puts data into 3 columar variables
+
+    Args:
+      filename: return: x, y, z (1 d array of observation data)
+
+    Returns:
+      x, y, z (1 d array of observation data)
+
     """
     dataX, dataY, dataZ = [], [], []              
     # Handle NetCDF files
@@ -111,17 +115,17 @@ def readInDataSet(filename):
     return dataX, dataY, dataZ
   
 def dataBuilder(filelist, data_coord_check, EPSG=26918):
-    """
-    this function reads the measured data sets and converts to UTM (assumed Longitude, latitude)
-
+    """this function reads the measured data sets and converts to UTM (assumed Longitude, latitude)
+    
     This function assumes UTM zone 18N at the FRF in NAD83
 
-    :param filelist: list of files that has single time step of bathymetry measurements
+    Args:
+      filelist: list of files that has single time step of bathymetry measurements
+      data_coord_check: param EPSG:  EPSG code used for tranlating Latitude/longitude to UTM ( assumed FRF) UTM zone 18 N
+      EPSG: Default value = 26918)
 
-    :param data_coord_check:
+    Returns:
 
-    :param EPSG:  EPSG code used for tranlating Latitude/longitude to UTM ( assumed FRF) UTM zone 18 N
-    :return:
     """
     tempX, tempY, tempZ = [], [], [] 
     for files in filelist:
@@ -142,6 +146,18 @@ def dataBuilder(filelist, data_coord_check, EPSG=26918):
 
 # load NOAA DEM
 def loadNOAAdem(filename, x0, x1, y0, y1):
+    """
+
+    Args:
+      filename: param x0:
+      x1: param y0:
+      y1: 
+      x0: 
+      y0: 
+
+    Returns:
+
+    """
     from scipy.io import netcdf 
     f = netcdf.netcdf_file(filename, 'r')
     xtmp = f.variables['x'][:]
@@ -173,22 +189,25 @@ Created on Thu Oct 16 11:25:54 2014
 # this was brought in from another file, - SB
 """
 def gridBuilder(x0, x1, y0, y1, dx, dy, grid_coord_check, grid_filename, EPSG=26918):
-    """
-        uses default to EPSG code of US EST coast (FRF location),
+    """uses default to EPSG code of US EST coast (FRF location),
     This function could also use key word generation
-
+    
     Builds the grid nodes, using verticies location
 
-    :param x0: xbound of grid points
-    :param x1: xbound of grid points
-    :param y0: ybound of grid points
-    :param y1: ybound of grid points
-    :param dx: cell size in x
-    :param dy: cell size in y
-    :param grid_coord_check:  a key to interpret the x,y bounds
-    :param grid_filename: a place to grab previous grid points, netCDF file must have keys of xFRF, yFRF
-    :param EPSG:
-    :return: an x grid and a y grid
+    Args:
+      x0: xbound of grid points
+      x1: xbound of grid points
+      y0: ybound of grid points
+      y1: ybound of grid points
+      dx: cell size in x
+      dy: cell size in y
+      grid_coord_check: a key to interpret the x,y bounds
+      grid_filename: a place to grab previous grid points, netCDF file must have keys of xFRF, yFRF
+      EPSG: return: an x grid and a y grid (Default value = 26918)
+
+    Returns:
+      an x grid and a y grid
+
     """
     if (grid_filename.strip() == ''):  # if there's no grid filename
         # build grid in UTM using dx dy, and 2 corners of grid(x0, y0)
@@ -198,8 +217,7 @@ def gridBuilder(x0, x1, y0, y1, dx, dy, grid_coord_check, grid_filename, EPSG=26
             x0, y0 = UTM16N(x0, y0)
             x1, y1 = UTM16N(x1, y1)
 
-
-        x0 = np.round(x0, decimals=0)  # why are these rounded ?  this moves the origin of the grid?
+        x0 = np.round(x0, decimals=0)
         x1 = np.round(x1, decimals=0)
         y0 = np.round(y0, decimals=0)
         y1 = np.round(y1, decimals=0)
@@ -216,7 +234,6 @@ def gridBuilder(x0, x1, y0, y1, dx, dy, grid_coord_check, grid_filename, EPSG=26
         xCoord = np.arange(x_min, x_max+dx, dx)
         yCoord = np.arange(y_min, y_max+dx, dy)
         x_grid, y_grid = np.meshgrid(xCoord, yCoord)
-        # pass
     else:
         try:
             gridFile = nc.Dataset(grid_filename)   # load netCDF file with grid node locations
