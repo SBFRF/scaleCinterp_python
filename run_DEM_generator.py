@@ -14,7 +14,7 @@ from dataBuilder import dataBuilder, gridBuilder
 from subsampleData import subsampleData
 from scalecInterpolation import scalecInterpTilePerturbations
 import datetime as DT
-from sblib import geoprocess as gp
+from testbedutils import geoprocess as gp
 
 
 p1 = gp.FRFcoord(3000, 2000)
