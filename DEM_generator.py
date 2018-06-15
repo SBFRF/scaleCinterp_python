@@ -103,7 +103,6 @@ def DEM_generator(dict):
     x_grid, y_grid = gridBuilder(x0, x1, y0, y1, lambdaX, lambdaY, dict['grid_coord_check'], dict['grid_filename'])
     t_grid = np.zeros_like((x_grid))  # Interpolate in time -- Not Developed Yet, but place holder there
 
-    # this is what Spike had... it is NOT identical to what the Matlab script passes to scalecInterpTilePerturbations
     xi = np.array([x_grid.flatten(), y_grid.flatten(), t_grid.flatten()]).T  # grid locations, flatten make row-major style
     # now make smoothing array same shape as  xi
     xsm = msmoothx*np.ones_like(x_grid)
