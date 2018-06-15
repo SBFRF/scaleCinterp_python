@@ -8,6 +8,15 @@ import numpy as np
 import scipy as sp
 
 def changeShape(dataObj, shape):
+    """
+
+    Args:
+      dataObj: param shape:
+      shape: 
+
+    Returns:
+
+    """
     if(np.shape(dataObj) != shape):
         reshapedDataObj = np.reshape(dataObj, shape)
         return reshapedDataObj
@@ -15,6 +24,14 @@ def changeShape(dataObj, shape):
         return np.array(dataObj)
         
 def omitNans(dataObj):
+    """
+
+    Args:
+      dataObj: 
+
+    Returns:
+
+    """
     import math
     newDataObj = []
     for p in dataObj:
@@ -76,6 +93,16 @@ def omitNans(dataObj):
 #    return np.array(C, dtype=int)
         
 def makeWBFlow(Ylocal, Nysmooth, mindyg):
+    """
+
+    Args:
+      Ylocal: param Nysmooth:
+      mindyg: 
+      Nysmooth: 
+
+    Returns:
+
+    """
     wbflow = np.exp(-((Ylocal - Ylocal[1]) / (1 * Nysmooth * mindyg)) ** 2)
     wbflow = wbflow + np.exp(-((Ylocal - Ylocal[-1]) / (1 * Nysmooth * mindyg)) ** 2);
     wbflow = 1 - wbflow
@@ -99,9 +126,8 @@ def makeWBFlow(Ylocal, Nysmooth, mindyg):
     # """
     
 def consistentWeight(z, e2, wtol=0.1):
-    """
-    compute weights consistent with observations and expected error variance for each observation
-     
+    """compute weights consistent with observations and expected error variance for each observation
+    
     [w, s2] = consistentWeight(z, e2, wtol)
     
     Input:
@@ -116,7 +142,15 @@ def consistentWeight(z, e2, wtol=0.1):
     assume (wj^2) = s2/(s2 + e2j), where s2 is true variance and e2j is error variance at observation j
     solve problem by guessing wj, then compute s2, then update wj
     assumes that true variance, s2, is constant over the data
-    """ 
+
+    Args:
+      z: param e2:
+      wtol: Default value = 0.1)
+      e2: 
+
+    Returns:
+
+    """
     # initial guess, weights are uniform
     #N = np.size(e2)
     winit = np.ones((z.shape[0],1), float)
@@ -142,9 +176,9 @@ def consistentWeight(z, e2, wtol=0.1):
     return w, s2
 
 def svd_invP(m, p):
-    """ invert matrix m
+    """invert matrix m
      retain eigen functions that account for p% of the variance
-     
+    
      m_inv = svd_invP(m, p);
     
      input
@@ -153,6 +187,13 @@ def svd_invP(m, p):
     
      output
         m_inv is its inverse, in the SVD sense
+
+    Args:
+      m: param p:
+      p: 
+
+    Returns:
+
     """
     # the retained variance (does not need to be 90%)
     P = p / 100
@@ -188,8 +229,7 @@ def svd_invP(m, p):
     return m_inv
 
 def si_wt(x, w=None):
-    """
-    [a] = si_wt(x, w)
+    """[a] = si_wt(x, w)
     
     Input:
     x are nxm inputs, weights will be centered on x=0
@@ -197,6 +237,13 @@ def si_wt(x, w=None):
     
     Output:
     a are weights 0<=w<=1
+
+    Args:
+      x: param w:  (Default value = None)
+      w:  (Default value = None)
+
+    Returns:
+
     """
     n, m = np.shape(x)
     Ln = 2 # fix up so scaling sends weights to zero at x=1
@@ -234,14 +281,19 @@ def si_wt(x, w=None):
     return w
 
 def hanning_wt(r):
-    """
-    w = hanning_wt(x)
+    """w = hanning_wt(x)
     
     Input:
     x are nxm inputs, weights will be centered on x=0
     
     Output:
     w are weights 0<=w<=1
+
+    Args:
+      r: 
+
+    Returns:
+
     """
     m = np.size(r)    
         
@@ -256,10 +308,15 @@ def hanning_wt(r):
     return r
 
 def loess_wt(r):
-    """
-    [w] = loess_wt(x)
+    """[w] = loess_wt(x)
     Input: x are nxm inputs, weights will be centered on x=0
     Output: w are weights 0<=w<=1
+
+    Args:
+      r: 
+
+    Returns:
+
     """
     
     n, m = np.shape(r)
@@ -276,6 +333,16 @@ def loess_wt(r):
     return r
     
 def loess_kernelND(d, p, Dx=0.05):
+    """
+
+    Args:
+      d: param p:
+      Dx: Default value = 0.05)
+      p: 
+
+    Returns:
+
+    """
     x = np.arange(-(1 + Dx), (1 + Dx), Dx) 
     x = np.reshape(x, (np.size(x, axis=0), 1)) # reshape x to be a column vector 
     N = np.size(x, axis=0)
@@ -361,9 +428,8 @@ def loess_kernelND(d, p, Dx=0.05):
     # """
     
 def regr_xzw(X, z, w=None, nargout=2):    
-    """ 
-     [b,brmse,sk,n,msz,msr,nmse] = regr_xzw(X,z,w);
-     
+    """[b,brmse,sk,n,msz,msr,nmse] = regr_xzw(X,z,w);
+    
      general linear regression call
      -nan- returned if data-data correlation matrix is badly conditioned
     
@@ -381,6 +447,15 @@ def regr_xzw(X, z, w=None, nargout=2):
        msz, variance of data
        msr, variance of residuals
        nmse, percent of white error input variance passed by weights
+
+    Args:
+      X: param z:
+      w: Default value = None)
+      nargout: Default value = 2)
+      z: 
+
+    Returns:
+
     """
     w = None
     

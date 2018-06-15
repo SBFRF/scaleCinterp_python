@@ -9,7 +9,7 @@ from supportingMethods import consistentWeight
 
 def subsampleData(X, z, e, Dx):
     """interpolate data into regular sample bins using boxcar window
-    
+
      Args:
          X: an NxM set of coordinates
          z: an Nxr array of observations, where the 2:rth columns are averaged identically to the first column
@@ -19,7 +19,7 @@ def subsampleData(X, z, e, Dx):
          N2: is either 1 (indicating constant smoothing lengthscales, or M, indicating variable lengthscales
              for each datapoint
     
-     Output
+     Returns
        Xi: the mean position of the data in each cell
        zi: the mean value at each interp. cell
        si: the standard error (=std. dev./sqrt(n)) (or, if ni<3, insert average value of all other si values)
@@ -39,8 +39,7 @@ def subsampleData(X, z, e, Dx):
             pcolor(XX,YY,ZZ);
 
     """
-    
-    # allow nans
+        # allow nans
     # 03 Jan 2011: ngp adds "+e+ so that data with nan error is chucked
     #np.seterr(invalid='ignore')
     tmp = z + e

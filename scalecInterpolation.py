@@ -30,8 +30,7 @@ def scalecInterpPerturbations(x, z, s, xi, lx, filtername, nmseitol, Ntotal, Ndo
          Ntotal: the total number of interpolated points being processed (e.g., larger than N if doing tiles)
          Ndone: the total number of interpolated points already processed (e.g., number done in previous tiles)
 
-
-     Output
+     Returns
        zi: the estimate
        msei: the mean square interpolation error estimate (units of z)
        nmsei: the normalized mean square error
@@ -361,6 +360,18 @@ def scalecInterpTilePerturbations(x, z, s, xi, lx, filtername, nmseitol):
 
      change log
      12 Feb 2009, NGP,  disabled the figure display so large regions don't croak
+
+    Args:
+      x: param z:
+      s: param xi:
+      lx: param filtername:
+      nmseitol: 
+      z: 
+      xi: 
+      filtername: 
+
+    Returns:
+
     """
     if np.shape(lx) == np.shape(xi):
         lx_tog = 1
