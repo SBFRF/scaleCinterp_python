@@ -5,7 +5,7 @@ Created on Wed Nov 05 20:31:07 2014
 @author: jwlong
 """
 import numpy as np
-from supportingMethods import consistentWeight
+from .supportingMethods import consistentWeight
 
 def subsampleData(X, z, e, Dx):
     """[Xi,zi, si, ni, Ji, Jmax, X0] = subsampleData(X,z,e,DX);

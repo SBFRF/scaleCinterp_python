@@ -5,9 +5,9 @@ Created on Thu Oct 16 09:33:00 2014
 @author: jwlong, edited Spicer Bak 8/4/17
 """
 import numpy as np
-from dataBuilder import dataBuilder, gridBuilder
-from subsampleData import subsampleData
-from scalecInterpolation import scalecInterpTilePerturbations
+from .dataBuilder import dataBuilder, gridBuilder
+from .subsampleData import subsampleData
+from .scalecInterpolation import scalecInterpTilePerturbations
 import datetime as DT
 import os
 import scipy.io as spio
@@ -84,7 +84,7 @@ def DEM_generator(dict):
     x = np.array([xFRF_s, yFRF_s, np.zeros(xFRF_s.size)]).T
     z = Z_s[:, np.newaxis]
     s = np.zeros((np.size(x[:,1]),1))    # TODO estimate measurement error from the crab and incorporate to scripts
-    print 'loading time is %s seconds' % (DT.datetime.now() - t)
+    print('loading time is %s seconds' % (DT.datetime.now() - t))
     assert x.shape[0] > 1, 'Data Did not Load!'
     ####################################################################
     # Call grid builder to make a grid based on x,y min and max values #
@@ -113,7 +113,7 @@ def DEM_generator(dict):
     DXsmooth[2] = 1  # this hard codes a time smoothing of 1 for subsampling of data
     t = DT.datetime.now()
     Xi, zprime, si = subsampleData(x, z, s, DXsmooth)
-    print 'subsampling time is %s seconds' % (DT.datetime.now() - t)
+    print('subsampling time is %s seconds' % (DT.datetime.now() - t))
 
     # a plot to compare original data to subsampled data
     # from matplotlib import pyplot as plt
@@ -133,7 +133,7 @@ def DEM_generator(dict):
     #####################################################################
     t = DT.datetime.now()
     zi, msei, nmsei, msri = scalecInterpTilePerturbations(Xi, zprime, si, xi, lx, filtername, nmseitol)
-    print 'Interpolating time is %s seconds' % (DT.datetime.now() - t)
+    print('Interpolating time is %s seconds' % (DT.datetime.now() - t))
 
     # reshape
     zi = np.reshape(zi, (M, N)).T           # zi, the estimate
@@ -218,7 +218,7 @@ def makeWBflow2D(dict):
 
     """
     # what does this look like?
-    sloc = 'C:\Users\dyoung8\Desktop\David Stuff\Projects\CSHORE\Bathy Interpolation\WeightFilterTest'
+    sloc = 'C:\\Users\dyoung8\Desktop\David Stuff\Projects\CSHORE\Bathy Interpolation\WeightFilterTest'
     sname = 'wbWeights'
     # also plot the output like a boss
     plt.pcolor(x_grid, y_grid, window, cmap=plt.cm.jet, vmin=0, vmax=1)

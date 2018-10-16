@@ -269,7 +269,7 @@ def si_wt(x, w=None):
     P = np.ceil(95 + 5 * (100 / (100 + n)))
     #P=100 # only reduce P if many data
     
-    from supportingMethods import svd_invP
+    from .supportingMethods import svd_invP
     r = svd_invP(r, P) # approach 95% for large N
     #r = np.inv(r)
     
@@ -358,7 +358,7 @@ def loess_kernelND(d, p, Dx=0.05):
         X = np.array([T.T.flatten(1), X.T.flatten(1), Y.T.flatten(1)]).T
     
     # get weights
-    from supportingMethods import loess_wt
+    from .supportingMethods import loess_wt
     W = loess_wt(X)
     
     # get basis for radially symmetric output
@@ -477,14 +477,14 @@ def regr_xzw(X, z, w=None, nargout=2):
     nmse = 1
     
     if(nz != n or  nw != n or nw != nz):
-        print 'X and z or w are different lengths \n'
+        print('X and z or w are different lengths \n')
         return b, brmse#, sk, n, msz, msr, nmse
     
     # find valid data by summing
     tmp = np.concatenate((X, z, w), axis=1)
     idd = (np.nonzero(np.isfinite(np.dot(tmp, np.ones((m+2,1), float)))==1))[0]
     if (np.size(idd) < 2):
-        print 'n < 2 -- exiting\n'
+        print('n < 2 -- exiting\n')
         return b, brmse #, sk, n, msz, msr, nmse
     
     # number of dof
@@ -496,7 +496,7 @@ def regr_xzw(X, z, w=None, nargout=2):
     try:
         Q = sp.sparse(np.diag(w[idd]**2))
     except:
-        print 'Q is too big, use constant!'
+        print('Q is too big, use constant!')
         Q = 1
     
     # and compute covariances

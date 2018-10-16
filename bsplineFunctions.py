@@ -640,7 +640,7 @@ def DLY_bspline(Zi, splinebctype=10, off=None, lc=None):
 
     """
     # just spline this and see what I get?
-    fig_loc = 'C:\Users\dyoung8\Desktop\David Stuff\Projects\CSHORE\Bathy Interpolation\DLY_Spline_Test'
+    fig_loc = 'C:\\Users\dyoung8\Desktop\David Stuff\Projects\CSHORE\Bathy Interpolation\DLY_Spline_Test'
     # check near the midpoint
     x_check = int(0.5 * len(Zn[0, :]))
     y_check = int(0.5 * len(Zn[:, 0]))

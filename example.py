@@ -1,4 +1,4 @@
-from DEM_generator import DEM_generator
+from .DEM_generator import DEM_generator
 import netCDF4 as nc
 import numpy as np
 import os
@@ -84,4 +84,4 @@ def main():
 
 
 if __name__ == '__main__':
-    print("This only executes when %s is executed rather than imported" % __file__)
+    print(("This only executes when %s is executed rather than imported" % __file__))

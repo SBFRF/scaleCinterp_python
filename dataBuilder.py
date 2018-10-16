@@ -34,7 +34,7 @@ def readInDataSet(filename):
             dataY = ncfile['latitude'][:]
             dataZ = ncfile['elevation'][:]
         except IOError:
-            print '1 - cannot open', filename, 'it may not exist.  Please check path' 
+            print('1 - cannot open', filename, 'it may not exist.  Please check path') 
     
     # Handle LAZ files
 
@@ -46,14 +46,14 @@ def readInDataSet(filename):
         from liblas import file
         try:
             f = file.File(filename, mode = 'r')
-            print 'Reading LAS'
+            print('Reading LAS')
             for p in f:
                 if p.classification == 2:
                     dataX.append(p.x) 
                     dataY.append(p.y)
                     dataZ.append(p.z)
         except IOError: 
-            print ('2 - cannot open', filename, 'it may not exist.  Please check path')
+            print(('2 - cannot open', filename, 'it may not exist.  Please check path'))
         
     elif filename.endswith('.xyz'):
         # open file, read lines
@@ -81,7 +81,7 @@ def readInDataSet(filename):
                         dataY.append(float(info[1]))
                         dataZ.append(float(info[2]))
         except IOError: 
-            print '3 - cannot open', filename, 'it may not exist.  Please check path'
+            print('3 - cannot open', filename, 'it may not exist.  Please check path')
     
     # Handle Mat files
     elif filename.endswith('.mat'):
@@ -94,10 +94,10 @@ def readInDataSet(filename):
             dataY = matFile['xi'][:,1]
             dataZ = matFile['xi'][:,2]
         except IOError: 
-            print '4 - cannot open', filename, 'it may not exist.  Please check path'
+            print('4 - cannot open', filename, 'it may not exist.  Please check path')
     else:
-        print 'The file extension of,', filename,', is not supported. Please try again'
-        print 'Supported file extension: \n.nc\n.laz\n.las\n.txt\n.mat'
+        print('The file extension of,', filename,', is not supported. Please try again')
+        print('Supported file extension: \n.nc\n.laz\n.las\n.txt\n.mat')
         
     try:  # see if its profile data
         # Reshape the data... for compatibility
@@ -221,7 +221,7 @@ def gridBuilder(x0, x1, y0, y1, dx, dy, grid_coord_check, grid_filename, EPSG=26
         x1 = np.round(x1, decimals=0)
         y0 = np.round(y0, decimals=0)
         y1 = np.round(y1, decimals=0)
-        print 'Generating Grid, Rounding grid nodes to whole number'
+        print('Generating Grid, Rounding grid nodes to whole number')
         numGridPointsX = np.ceil(np.abs(x1-x0)/dx)  # this assumes finite difference grid (points are vertex located) - sb
         numGridPointsY = np.ceil(np.abs(y1-y0)/dy)
         assert numGridPointsX > 0, 'Grid must have more than 0 nodes in X, check coordinate system'
@@ -237,12 +237,12 @@ def gridBuilder(x0, x1, y0, y1, dx, dy, grid_coord_check, grid_filename, EPSG=26
     else:
         try:
             gridFile = nc.Dataset(grid_filename)   # load netCDF file with grid node locations
-            print "here's where to get the NetCDF grid file locations %s" %(grid_filename)
+            print("here's where to get the NetCDF grid file locations %s" %(grid_filename))
             xCoord = gridFile['xFRF']
             yCoord = gridFile['yFRF']
 
             x_grid, y_grid = np.meshgrid(xCoord, yCoord)
         except IOError:
-            print 'The file,', grid_filename, ', does not exist in the path. Please try again.'
+            print('The file,', grid_filename, ', does not exist in the path. Please try again.')
 
     return x_grid, y_grid
